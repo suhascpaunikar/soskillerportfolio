@@ -2,7 +2,7 @@
 
 Research, references and structure for redoing [suhaspaunikar.framer.website](https://suhaspaunikar.framer.website). Nothing is built yet. This repo holds the thinking, so the build can be fast and deliberate.
 
-**Visual research board:** [`research/board/index.html`](research/board/index.html) (open it in a browser; it includes small interactive demos of the three concept directions).
+**Visual research board:** https://claude.ai/artifact/Mezm3fqLAsq7QQVMtTYsPD (private to you; source in [`research/board/index.html`](research/board/index.html)). It includes playable demos of the three concept directions: scrub the timeline, fill the cart, tidy the desk.
 
 ---
 

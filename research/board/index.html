@@ -1,0 +1,1557 @@
+<meta charset="utf-8">
+<title>Suhas Portfolio Redesign</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Research, references and site structure for redesigning Suhas Paunikar's portfolio, with interactive demos of three concept directions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an editor's production binder. A slate header, then numbered reels (sections) in a 1120px frame;
+   reading text held near 68ch, demos and card grids use the full frame. */
+:root {
+  --paper: #f4f5f8;
+  --surface: #ffffff;
+  --surface-2: #eceef3;
+  --ink: #121318;
+  --ink-2: #444955;
+  --muted: #646a79;
+  --rule: #d8dbe3;
+  --rec: #e5484d;
+  --dir-a: #2a78d6;
+  --dir-b: #eb6834;
+  --dir-c: #1baf7a;
+  --good: #0ca30c;
+  --warn: #fab219;
+  --crit: #d03b3b;
+  --good-bg: #e7f4e7;
+  --warn-bg: #fff4d6;
+  --crit-bg: #fbe8e8;
+  --focus: #2a78d6;
+  --ff-display: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --ff-body: "Hanken Grotesk", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --ff-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.1875rem;
+  --step-2: 1.5rem;
+  --step-3: 2.25rem;
+  --step-4: clamp(2.5rem, 6vw, 4.25rem);
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1014;
+    --surface: #17181e;
+    --surface-2: #20222a;
+    --ink: #eceef2;
+    --ink-2: #b9bcc7;
+    --muted: #8f93a2;
+    --rule: #2c2f39;
+    --rec: #ff6b70;
+    --dir-a: #3987e5;
+    --dir-b: #d95926;
+    --dir-c: #199e70;
+    --good-bg: #13301a;
+    --warn-bg: #3a2f10;
+    --crit-bg: #3b1718;
+    --focus: #6aa7f0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1014;
+  --surface: #17181e;
+  --surface-2: #20222a;
+  --ink: #eceef2;
+  --ink-2: #b9bcc7;
+  --muted: #8f93a2;
+  --rule: #2c2f39;
+  --rec: #ff6b70;
+  --dir-a: #3987e5;
+  --dir-b: #d95926;
+  --dir-c: #199e70;
+  --good-bg: #13301a;
+  --warn-bg: #3a2f10;
+  --crit-bg: #3b1718;
+  --focus: #6aa7f0;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+:root[data-spice="mild"] { scroll-behavior: auto; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--ff-body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 40;
+  background: var(--paper);
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+h1, h2, h3, h4 { text-wrap: balance; margin: 0; }
+p { margin: 0; }
+ul, ol { margin: 0; padding-left: 1.2em; }
+code, .mono { font-family: var(--ff-mono); font-size: 0.86em; }
+
+.wrap {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.measure { max-width: 68ch; }
+
+/* ---------- Top bar ---------- */
+.topbar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 30;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar .wrap { display: flex; align-items: center; gap: 16px; padding-block: 10px; }
+.brand { display: flex; align-items: center; gap: 8px; font-family: var(--ff-mono); font-size: var(--step--1); letter-spacing: 0.04em; white-space: nowrap; }
+.rec-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--rec); display: inline-block; }
+:root[data-spice="medium"] .rec-dot, :root[data-spice="saoji"] .rec-dot { animation: blink 1.6s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+.toc { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+.toc::-webkit-scrollbar { display: none; }
+.toc a { font-size: var(--step--1); text-decoration: none; color: var(--ink-2); padding: 4px 8px; border-radius: 6px; white-space: nowrap; }
+.toc a:hover { background: var(--surface-2); color: var(--ink); }
+
+/* ---------- Segmented controls ---------- */
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; background: var(--surface); gap: 2px; }
+.seg button {
+  font: 500 var(--step--1)/1 var(--ff-body);
+  color: var(--ink-2);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 160ms ease, color 160ms ease;
+}
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.spice-wrap { display: flex; align-items: center; gap: 8px; }
+.spice-wrap .label { font-family: var(--ff-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+@media (max-width: 760px) {
+  .topbar .wrap { flex-wrap: wrap; row-gap: 8px; }
+  .toc { order: 3; flex-basis: 100%; }
+  .spice-wrap { margin-left: auto; }
+  .spice-wrap .label { display: none; }
+}
+
+/* ---------- Slate (hero) ---------- */
+.slate { padding-block: 40px 28px; }
+.slate-card { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+.clapper {
+  height: 22px;
+  background: repeating-linear-gradient(-45deg, var(--ink) 0 18px, var(--surface) 18px 36px);
+  border-bottom: 1px solid var(--rule);
+}
+.slate-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-bottom: 1px solid var(--rule); }
+.slate-grid div { padding: 10px 14px; border-right: 1px solid var(--rule); min-width: 0; }
+.slate-grid div:last-child { border-right: 0; }
+.k { display: block; font-family: var(--ff-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.v { display: block; font-weight: 600; font-size: var(--step--1); overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .slate-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .slate-grid div { border-bottom: 1px solid var(--rule); }
+  .slate-grid div:nth-child(2n) { border-right: 0; }
+  .slate-grid div:last-child { grid-column: 1 / -1; border-bottom: 0; }
+}
+.slate-body { padding: 28px clamp(16px, 4vw, 40px) 32px; display: grid; gap: 18px; }
+.slate-body h1 { font-family: var(--ff-display); font-weight: 400; font-size: var(--step-4); line-height: 1.02; letter-spacing: -0.01em; }
+.slate-body h1 em { font-style: italic; }
+.lede { font-size: var(--step-1); color: var(--ink-2); max-width: 62ch; }
+.tldr { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 176px), 1fr)); gap: 12px; margin-top: 6px; }
+.tldr li { border-top: 2px solid var(--ink); padding-top: 10px; font-size: 0.94rem; color: var(--ink-2); min-width: 0; }
+.tldr b { color: var(--ink); display: block; font-size: 0.98rem; margin-bottom: 2px; }
+.easter-hint { font-family: var(--ff-mono); font-size: 0.72rem; color: var(--muted); }
+
+/* ---------- Reels (sections) ---------- */
+.reel { padding-block: 44px; border-top: 1px solid var(--rule); scroll-margin-top: 64px; }
+@media (max-width: 760px) { .reel { scroll-margin-top: 104px; } }
+.reel-head { display: grid; gap: 8px; margin-bottom: 24px; }
+.eyebrow { font-family: var(--ff-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.reel-head h2 { font-family: var(--ff-display); font-weight: 400; font-size: var(--step-3); line-height: 1.08; }
+.reel-head p { color: var(--ink-2); max-width: 68ch; }
+h3 { font-size: var(--step-1); font-weight: 600; line-height: 1.3; }
+h4 { font-size: 1rem; font-weight: 600; }
+.small { font-size: var(--step--1); color: var(--muted); }
+
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .grid-3 { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+.panel { border-top: 2px solid var(--ink); padding-top: 14px; min-width: 0; }
+.list { display: grid; gap: 8px; padding-left: 1.1em; }
+.list li { color: var(--ink-2); }
+.list li b { color: var(--ink); }
+
+/* ---------- Audit ---------- */
+.audit-visual { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 0.9fr) minmax(0, 1fr); gap: 16px; align-items: start; margin-bottom: 20px; }
+@media (max-width: 900px) { .audit-visual { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .audit-visual .shot-desktop { grid-column: 1 / -1; } }
+@media (max-width: 520px) { .audit-visual { grid-template-columns: 1fr; } }
+figure { margin: 0; min-width: 0; }
+figcaption { font-size: var(--step--1); color: var(--muted); margin-top: 8px; }
+.shot { border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: #ffffff; }
+.shot img { width: 100%; height: 440px; object-fit: cover; object-position: top; }
+.shot-phone .shot img { height: 440px; }
+@media (max-width: 700px) { .shot img, .shot-phone .shot img { height: 320px; } }
+.length-strip { display: flex; gap: 14px; align-items: flex-start; padding: 14px; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+.length-strip figure { display: grid; gap: 6px; justify-items: start; }
+.length-strip img { width: 46px; border: 1px solid var(--rule); background: #ffffff; }
+.length-strip figcaption { margin: 0; font-family: var(--ff-mono); font-size: 0.66rem; line-height: 1.35; }
+.screen-mark { width: 46px; height: 29px; border: 1px dashed var(--muted); display: grid; place-items: center; font-family: var(--ff-mono); font-size: 0.55rem; color: var(--muted); }
+
+/* ---------- Stat tiles ---------- */
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; }
+@media (max-width: 860px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.tile .t-label { font-size: var(--step--1); color: var(--ink-2); }
+.tile .t-value { font-family: var(--ff-body); font-weight: 600; font-size: 2rem; line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.tile .t-value.quote { font-family: var(--ff-display); font-weight: 400; font-style: italic; font-size: 1.55rem; }
+.tile .t-src { font-size: 0.72rem; color: var(--muted); }
+.tile .t-src a { color: var(--muted); }
+.rules { counter-reset: rule; list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; }
+@media (max-width: 760px) { .rules { grid-template-columns: 1fr; } }
+.rules li { counter-increment: rule; display: grid; grid-template-columns: 2.2em minmax(0, 1fr); gap: 6px; color: var(--ink-2); }
+.rules li::before { content: counter(rule, decimal-leading-zero); font-family: var(--ff-mono); font-size: var(--step--1); color: var(--muted); padding-top: 2px; }
+.rules b { color: var(--ink); }
+
+/* ---------- Verdicts ---------- */
+.verdict-col h3 { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.badge { display: inline-flex; align-items: center; gap: 6px; font: 600 0.72rem/1 var(--ff-mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; color: var(--ink); }
+.badge .ic { width: 16px; height: 16px; border-radius: 50%; display: inline-grid; place-items: center; color: #ffffff; font-size: 0.7rem; }
+.badge.good { background: var(--good-bg); } .badge.good .ic { background: var(--good); }
+.badge.warn { background: var(--warn-bg); } .badge.warn .ic { background: var(--warn); color: #1b1300; }
+.badge.crit { background: var(--crit-bg); } .badge.crit .ic { background: var(--crit); }
+.verdict-list { list-style: none; padding: 0; display: grid; gap: 10px; }
+.verdict-list li { display: grid; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.verdict-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+.verdict-list b { font-weight: 600; }
+.verdict-list span { font-size: 0.9rem; color: var(--ink-2); }
+
+/* ---------- Directions ---------- */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.tab {
+  display: flex; align-items: center; gap: 10px; text-align: left;
+  font: 600 0.95rem/1.2 var(--ff-body); color: var(--ink);
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius);
+  padding: 10px 14px; cursor: pointer;
+}
+.tab small { display: block; font-weight: 400; color: var(--muted); font-size: 0.78rem; }
+.tab[aria-selected="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+.sw-a { background: var(--dir-a); } .sw-b { background: var(--dir-b); } .sw-c { background: var(--dir-c); }
+.pick { font: 600 0.66rem/1 var(--ff-mono); letter-spacing: 0.08em; text-transform: uppercase; background: var(--ink); color: var(--paper); padding: 4px 6px; border-radius: 4px; }
+.tabpanel { display: grid; gap: 16px; }
+.dir-intro { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 820px) { .dir-intro { grid-template-columns: 1fr; } }
+.dir-intro .oneliner { font-family: var(--ff-display); font-size: var(--step-2); line-height: 1.2; }
+.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 0.92rem; }
+.kv dt { font-family: var(--ff-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.kv dd { margin: 0; color: var(--ink-2); }
+.demo-frame { border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); padding: 14px; min-width: 0; }
+.demo-label { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.demo-label .eyebrow { color: var(--ink-2); }
+
+/* Demo A: Director's Cut */
+.suite { background: #0d0e12; color: #e9eaee; border-radius: 8px; padding: 12px; display: grid; gap: 12px; }
+.suite-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-family: var(--ff-mono); font-size: 0.72rem; color: #9aa0ad; }
+.suite-top .tc { color: #e9eaee; font-variant-numeric: tabular-nums; }
+.suite-rec { display: inline-flex; align-items: center; gap: 6px; color: #ff6b70; }
+.suite .seg { background: #17181e; border-color: #2c2f39; }
+.suite .seg button { color: #b9bcc7; }
+.suite .seg button[aria-pressed="true"] { background: #e9eaee; color: #0d0e12; }
+.monitor { position: relative; aspect-ratio: 16 / 7; max-width: 100%; border-radius: 6px; overflow: hidden; background: radial-gradient(120% 140% at 15% 10%, #2a2d38 0%, #121318 55%, #0b0c0f 100%); display: grid; align-content: end; padding: clamp(14px, 3vw, 26px); }
+@media (max-width: 600px) { .monitor { aspect-ratio: auto; min-height: 260px; } }
+.monitor::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 26px 0 #000, inset 0 -26px 0 #000; opacity: 0.55; }
+.mon-body { position: relative; z-index: 1; display: grid; gap: 6px; max-width: 60ch; }
+.mon-note { position: absolute; top: 36px; left: clamp(14px, 3vw, 26px); right: 14px; z-index: 1; font-family: var(--ff-mono); font-size: 0.66rem; letter-spacing: 0.04em; color: #7d8291; }
+.mon-track { font-family: var(--ff-mono); font-size: 0.68rem; letter-spacing: 0.12em; color: #9aa0ad; }
+.mon-title { font-family: var(--ff-display); font-weight: 400; font-size: clamp(1.6rem, 4vw, 2.4rem); line-height: 1.05; color: #ffffff; }
+.mon-text { color: #cfd2da; font-size: 0.95rem; }
+.mon-metric { font-family: var(--ff-mono); font-size: 0.8rem; color: #ffffff; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: 999px; padding: 4px 10px; justify-self: start; }
+.suite[data-rating="ua"] .mon-body.swap { animation: fadeIn 260ms ease both; }
+.suite[data-rating="a"] .mon-body.swap { animation: hardCut 220ms steps(2, end) both; }
+.suite[data-rating="a"] .monitor.flash::before { content: ""; position: absolute; inset: 0; background: #fff; opacity: 0; animation: flash 180ms ease-out; z-index: 2; pointer-events: none; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes hardCut { 0% { opacity: 0; transform: translateX(-8px); filter: hue-rotate(60deg); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes flash { 0% { opacity: 0.35; } 100% { opacity: 0; } }
+.timeline { position: relative; display: grid; gap: 6px; padding: 8px 0; border-top: 1px solid #23252e; outline-offset: 4px; touch-action: pan-y; cursor: ew-resize; user-select: none; -webkit-user-select: none; }
+.track { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; align-items: center; }
+.track-label { font-family: var(--ff-mono); font-size: 0.64rem; letter-spacing: 0.08em; color: #9aa0ad; }
+.track-label.active { color: #ffffff; }
+.lane { position: relative; height: 30px; background: #15161b; border-radius: 4px; }
+.clip { position: absolute; top: 2px; bottom: 2px; border-radius: 4px; background: #262935; border: 1px solid #343846; color: #d7d9e0; font: 500 0.66rem/1 var(--ff-body); padding: 0 6px; display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; }
+.clip.v1 { background: #2b3550; border-color: #3d4b72; }
+.clip.v2 { background: #2f2a45; border-color: #463f66; }
+.clip.a1 { background: repeating-linear-gradient(90deg, #1f3a33 0 2px, #173029 2px 4px); border-color: #2c5248; }
+.clip.on { border-color: #ffffff; color: #ffffff; box-shadow: 0 0 0 1px #ffffff inset; }
+.playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: #ff6b70; margin-left: 72px; pointer-events: none; transform: translateX(-1px); }
+.playhead::before { content: ""; position: absolute; top: -2px; left: -5px; width: 12px; height: 10px; background: #ff6b70; clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%); }
+.suite-hint { font-family: var(--ff-mono); font-size: 0.68rem; color: #9aa0ad; }
+.kbd { font-family: var(--ff-mono); font-size: 0.66rem; border: 1px solid #3a3d48; border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; color: #e9eaee; }
+
+/* Demo B: Checkout */
+.store { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr); gap: 18px; position: relative; }
+@media (max-width: 760px) { .store { grid-template-columns: 1fr; } }
+.render { border-radius: 8px; background: linear-gradient(160deg, var(--surface-2), var(--surface)); border: 1px solid var(--rule); aspect-ratio: 4 / 5; max-width: 100%; position: relative; display: grid; place-items: center; overflow: hidden; }
+@media (max-width: 760px) { .render { aspect-ratio: 16 / 10; } }
+.monogram { font-family: var(--ff-display); font-size: clamp(5rem, 14vw, 9rem); line-height: 1; letter-spacing: -0.04em; }
+.ribbon { position: absolute; top: 12px; left: 12px; font: 600 0.68rem/1 var(--ff-mono); letter-spacing: 0.08em; text-transform: uppercase; background: var(--ink); color: var(--paper); padding: 6px 8px; border-radius: 4px; }
+.sku { position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; font-family: var(--ff-mono); font-size: 0.68rem; color: var(--muted); gap: 8px; flex-wrap: wrap; }
+.pdp { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.pdp h4 { font-family: var(--ff-display); font-weight: 400; font-size: var(--step-2); line-height: 1.15; }
+.stock { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; color: var(--ink-2); }
+.stock .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+.delivery { display: grid; gap: 6px; border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; font-size: 0.88rem; }
+.delivery div { display: flex; justify-content: space-between; gap: 10px; }
+.delivery span:last-child { color: var(--ink-2); text-align: right; }
+.bestsellers { display: grid; gap: 8px; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; }
+.item b { display: block; font-size: 0.95rem; }
+.item span { font-family: var(--ff-mono); font-size: 0.74rem; color: var(--muted); }
+.btn { font: 600 0.84rem/1 var(--ff-body); border-radius: 8px; padding: 10px 12px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); cursor: pointer; white-space: nowrap; transition: transform 140ms ease, background 140ms ease; }
+.btn:hover { background: var(--surface-2); }
+.btn:active { transform: scale(0.97); }
+.btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn.primary:hover { background: var(--ink-2); }
+.btn[aria-pressed="true"] { background: var(--good-bg); border-color: var(--good); }
+.cart-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.cart-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; border-radius: 999px; background: var(--rec); color: #ffffff; font: 600 0.7rem/1 var(--ff-mono); margin-left: 6px; padding: 0 5px; }
+.cart-count.bump { animation: bump 300ms ease; }
+@keyframes bump { 40% { transform: scale(1.35); } }
+.drawer { border: 1px dashed var(--rule); border-radius: 8px; padding: 12px; display: grid; gap: 10px; background: var(--surface); }
+.drawer ul { list-style: none; padding: 0; display: grid; gap: 6px; font-size: 0.9rem; }
+.drawer li { display: flex; justify-content: space-between; gap: 8px; }
+.tracking { list-style: none; padding: 0; display: grid; gap: 0; }
+.tracking li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; align-items: start; padding-bottom: 10px; position: relative; color: var(--muted); }
+.tracking li::before { content: ""; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--rule); background: var(--surface); margin-top: 5px; }
+.tracking li.done { color: var(--ink); }
+.tracking li.done::before { background: var(--good); border-color: var(--good); }
+.tracking li:not(:last-child)::after { content: ""; position: absolute; left: 7px; top: 20px; bottom: 0; width: 2px; background: var(--rule); }
+.fine { font-size: 0.78rem; color: var(--muted); }
+
+/* Demo C: Studio Desk */
+.desk-wrap { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 820px) { .desk-wrap { grid-template-columns: 1fr; } }
+.desk {
+  position: relative; height: 380px; border-radius: 8px; overflow: hidden;
+  background:
+    radial-gradient(80% 70% at 30% 20%, rgba(255,255,255,0.35), transparent 60%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.035) 0 2px, transparent 2px 9px),
+    linear-gradient(135deg, #c99d72, #a8784d);
+  border: 1px solid var(--rule);
+}
+@media (max-width: 560px) { .desk { height: 470px; } }
+.desk.tidy { height: auto; background: var(--surface-2); display: grid; gap: 8px; padding: 12px; }
+.obj {
+  position: absolute; display: grid; justify-items: center; gap: 4px;
+  background: transparent; border: 0; padding: 6px; border-radius: 8px; cursor: grab;
+  color: #1c140c; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.obj:active { cursor: grabbing; }
+.obj svg { width: 64px; height: 64px; filter: drop-shadow(0 6px 6px rgba(0,0,0,0.25)); }
+.obj .tag { font: 600 0.62rem/1.2 var(--ff-mono); letter-spacing: 0.04em; background: #fffdf7; color: #1c140c; border-radius: 4px; padding: 3px 6px; box-shadow: 0 1px 0 rgba(0,0,0,0.2); white-space: nowrap; }
+.obj.dragging { z-index: 5; }
+.obj.dragging svg { filter: drop-shadow(0 14px 12px rgba(0,0,0,0.3)); transform: scale(1.06); }
+.desk.tidy .obj { position: relative; left: auto !important; top: auto !important; grid-template-columns: 40px minmax(0, 1fr); justify-items: start; align-items: center; width: 100%; background: var(--surface); border: 1px solid var(--rule); color: var(--ink); cursor: pointer; }
+.desk.tidy .obj svg { width: 34px; height: 34px; filter: none; color: var(--ink); }
+.desk.tidy .obj .tag { background: transparent; color: var(--ink); box-shadow: none; font-size: 0.74rem; padding: 0; white-space: normal; text-align: left; }
+.sheet { border: 1px solid var(--rule); border-radius: 8px; padding: 14px; background: var(--surface); display: grid; gap: 10px; align-content: start; min-width: 0;
+  background-image: linear-gradient(var(--rule) 1px, transparent 1px), linear-gradient(90deg, var(--rule) 1px, transparent 1px); background-size: 22px 22px; background-position: -1px -1px; }
+.sheet > * { background: var(--surface); }
+.sheet .sheet-id { font-family: var(--ff-mono); font-size: 0.7rem; letter-spacing: 0.1em; color: var(--muted); justify-self: start; padding: 2px 4px; }
+.sheet h4 { font-family: var(--ff-display); font-weight: 400; font-size: var(--step-2); line-height: 1.1; justify-self: start; padding: 0 4px; }
+.sheet dl { margin: 0; padding: 8px; border: 1px solid var(--rule); border-radius: 6px; }
+
+/* ---------- Scorecard ---------- */
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; min-width: 560px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; font-size: 0.92rem; }
+th { font-family: var(--ff-mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tr.total td { font-weight: 700; background: var(--surface-2); }
+.scroll-hint { display: none; margin-top: 8px; }
+@media (max-width: 620px) { .scroll-hint { display: block; } }
+.colhead { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- Interaction cards ---------- */
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 900px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .cards { grid-template-columns: 1fr; } }
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px; display: grid; gap: 8px; align-content: start; min-width: 0; transition: transform 200ms ease, box-shadow 200ms ease; }
+:root[data-spice="saoji"] .card:hover { transform: translateY(-3px) rotate(-0.4deg); box-shadow: 0 10px 24px rgba(0,0,0,0.08); }
+.card p { color: var(--ink-2); font-size: 0.93rem; }
+.effort { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font: 500 0.68rem/1 var(--ff-mono); letter-spacing: 0.04em; border: 1px solid var(--rule); border-radius: 999px; padding: 4px 8px; color: var(--ink-2); }
+
+/* ---------- Structure ---------- */
+.tree { font-family: var(--ff-mono); font-size: 0.8rem; line-height: 1.75; list-style: none; padding: 0; }
+.tree ul { list-style: none; padding-left: 18px; border-left: 1px solid var(--rule); margin-left: 6px; }
+.tree li { position: relative; }
+.tree ul li::before { content: ""; position: absolute; left: -18px; top: 0.85em; width: 12px; border-top: 1px solid var(--rule); }
+.tree .note { font-family: var(--ff-body); color: var(--muted); font-size: 0.78rem; margin-left: 6px; }
+.wire { border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); padding: 10px; display: grid; gap: 6px; font-family: var(--ff-mono); font-size: 0.64rem; color: var(--ink-2); }
+.wire .w { border: 1px dashed var(--muted); border-radius: 4px; padding: 8px; display: grid; gap: 4px; }
+.wire .w b { font-family: var(--ff-body); font-size: 0.78rem; color: var(--ink); font-weight: 600; }
+.wire .row { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); gap: 6px; }
+.wire .tl { display: grid; gap: 3px; }
+.wire .tl i { display: block; height: 8px; border-radius: 2px; background: var(--surface-2); border: 1px solid var(--rule); }
+.wire .tl i.on { background: var(--ink); border-color: var(--ink); width: 46%; }
+.phones { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.phone { border: 1px solid var(--rule); border-radius: 18px; padding: 10px 8px; aspect-ratio: 9 / 17; max-width: 100%; display: grid; align-content: space-between; background: var(--surface); font-size: 0.66rem; color: var(--ink-2); gap: 4px; min-width: 0; }
+.phone b { font-family: var(--ff-display); font-weight: 400; font-size: 0.98rem; color: var(--ink); line-height: 1.1; }
+.phone .ph-media { background: var(--surface-2); border-radius: 8px; flex: 1; min-height: 60px; }
+.phone .swipe { text-align: center; font-family: var(--ff-mono); font-size: 0.58rem; color: var(--muted); }
+.cut-steps { list-style: none; padding: 0; display: grid; gap: 0; counter-reset: ch; }
+.cut-steps li { counter-increment: ch; display: grid; grid-template-columns: 2.4em minmax(0, 1fr); gap: 4px 8px; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+.cut-steps li:last-child { border-bottom: 0; }
+.cut-steps li::before { content: counter(ch, decimal-leading-zero); font-family: var(--ff-mono); font-size: 0.72rem; color: var(--muted); padding-top: 3px; }
+.cut-steps b { font-weight: 600; }
+.cut-steps span { grid-column: 2; color: var(--ink-2); font-size: 0.9rem; }
+
+/* ---------- References ---------- */
+.refs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 760px) { .refs { grid-template-columns: 1fr; } }
+.refs ul { list-style: none; padding: 0; display: grid; gap: 10px; }
+.refs li { display: grid; gap: 2px; }
+.refs li a { font-weight: 600; }
+.refs li span { color: var(--ink-2); font-size: 0.9rem; }
+
+/* ---------- Roadmap ---------- */
+.weeks { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 960px) { .weeks { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .weeks { grid-template-columns: 1fr; } }
+.week { border-top: 2px solid var(--ink); padding-top: 8px; display: grid; gap: 4px; min-width: 0; }
+.week .wk { font-family: var(--ff-mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; }
+.week p { font-size: 0.88rem; color: var(--ink-2); }
+
+/* ---------- Questions ---------- */
+.questions { display: grid; gap: 10px; padding-left: 1.4em; }
+.questions li { color: var(--ink-2); padding-left: 4px; }
+.questions li::marker { font-family: var(--ff-mono); color: var(--muted); }
+.questions b { color: var(--ink); }
+
+/* ---------- Credits footer ---------- */
+.credits { border-top: 1px solid var(--rule); background: #0d0e12; color: #d9dbe2; padding-block: 40px calc(40px + env(safe-area-inset-bottom, 0px)); }
+.credits .eyebrow { color: #8f93a2; }
+.roll-mask { margin-top: 16px; }
+:root[data-spice="saoji"] .roll-mask { height: 220px; overflow: hidden; -webkit-mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent); }
+.roll { display: grid; gap: 14px; text-align: center; }
+:root[data-spice="saoji"] .roll { animation: roll 22s linear infinite; }
+:root[data-spice="saoji"] .roll-mask:hover .roll { animation-play-state: paused; }
+@keyframes roll { from { transform: translateY(220px); } to { transform: translateY(-100%); } }
+.roll .role { font-family: var(--ff-mono); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: #8f93a2; }
+.roll .name { font-family: var(--ff-display); font-size: 1.3rem; color: #ffffff; line-height: 1.25; }
+.post-credits { margin-top: 24px; text-align: center; font-family: var(--ff-mono); font-size: 0.72rem; color: #8f93a2; }
+
+/* ---------- Saoji extras ---------- */
+.grain { position: fixed; inset: 0; pointer-events: none; z-index: 60; opacity: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>"); }
+:root[data-spice="saoji"] .grain { opacity: 0.07; animation: grainShift 0.6s steps(3) infinite; }
+@keyframes grainShift { 33% { background-position: 40px 20px; } 66% { background-position: -30px 50px; } }
+.chilli { position: fixed; top: -40px; z-index: 70; pointer-events: none; animation: fall 2.1s cubic-bezier(0.4, 0, 1, 1) forwards; }
+@keyframes fall { to { transform: translateY(calc(100vh + 80px)) rotate(240deg); } }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 80; background: var(--ink); color: var(--paper); font-size: 0.86rem; padding: 10px 14px; border-radius: 999px; max-width: calc(100vw - 32px); text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+
+:root[data-spice="mild"] *, :root[data-spice="mild"] *::before, :root[data-spice="mild"] *::after { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+
+<div class="grain" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand"><span class="rec-dot" aria-hidden="true"></span><span>SP · REDESIGN BOARD</span></div>
+    <nav class="toc" aria-label="Sections">
+      <a href="#audit">Audit</a>
+      <a href="#reviewers">Reviewers</a>
+      <a href="#trends">Trends</a>
+      <a href="#directions">Directions</a>
+      <a href="#interactions">Interactions</a>
+      <a href="#structure">Structure</a>
+      <a href="#references">References</a>
+      <a href="#build">Build</a>
+      <a href="#questions">Questions</a>
+    </nav>
+    <div class="spice-wrap">
+      <span class="label" id="spiceGroupLabel">Spice level</span>
+      <div class="seg" role="group" aria-labelledby="spiceGroupLabel">
+        <button type="button" data-spice-set="mild" aria-pressed="false">Mild</button>
+        <button type="button" data-spice-set="medium" aria-pressed="true">Medium</button>
+        <button type="button" data-spice-set="saoji" aria-pressed="false">Saoji</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="slate">
+    <div class="wrap">
+      <div class="slate-card">
+        <div class="clapper" aria-hidden="true"></div>
+        <div class="slate-grid">
+          <div><span class="k">Prod</span><span class="v">Portfolio redesign</span></div>
+          <div><span class="k">For</span><span class="v">Suhas Paunikar</span></div>
+          <div><span class="k">Scene</span><span class="v">Research &amp; structure</span></div>
+          <div><span class="k">Take</span><span class="v">1</span></div>
+          <div><span class="k">Date</span><span class="v">02 Nov 2026</span></div>
+        </div>
+        <div class="slate-body">
+          <h1>Keep the work. <em>Change how fast people get it.</em></h1>
+          <p class="lede">An audit of your live Framer site, about 100 searches on 2026 trends and hiring, references worth stealing from, three concept directions you can try below, and a full site structure. The written version with every source lives in the repo under <code>research/</code>.</p>
+          <ul class="tldr">
+            <li><b>Your content is strong</b>23 in 100 orders moved to store pickup, 2.5× fewer returns, an AI tool in every Lenskart store, and a backstory most designers don't have.</li>
+            <li><b>The container is generic</b>A default template look, nothing specific in the first 10 seconds, and case studies about 14 screens long.</li>
+            <li><b>Reviewers skim</b>About 10–15 seconds on a homepage and 55 on a portfolio. Fun has to make you faster to understand.</li>
+            <li><b>Recommended: Director's Cut</b>Your portfolio as an edit: a scrubbable timeline, 30-second cuts, test screenings, box office, end credits.</li>
+            <li><b>Build these in any direction</b>A Spice level motion control, a 30-sec / Director's cut toggle, and playable slices of your real work.</li>
+          </ul>
+          <p class="easter-hint">The Spice level control in the top bar works on this page too. Saoji is a fiery Nagpur cuisine with 30+ spices; you can also type “saoji” anywhere.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R1 AUDIT -->
+  <section class="reel" id="audit">
+    <div class="wrap">
+      <div class="reel-head">
+        <span class="eyebrow">R1 · Audit</span>
+        <h2>What the current site does well, and what holds it back</h2>
+        <p>Read directly from the published Framer project “Suhas Portfolio” (no unpublished changes). Screens below are canvas captures; the hero's ASCII background and the video tiles don't render in canvas captures, which is also roughly what a visitor on slow mobile data sees before the videos load.</p>
+      </div>
+      <div class="audit-visual">
+        <figure class="shot-desktop">
+          <div class="shot"><img src="assets/audit-home-desktop.jpg" alt="Current home page on desktop: a pill navigation, the heading Hi I'm Suhas, a one-paragraph bio, Resume and LinkedIn buttons, then a Selected work section with a blank grey video tile." width="960" height="1733" loading="lazy"></div>
+          <figcaption>Home, desktop (top third).</figcaption>
+        </figure>
+        <figure class="shot-phone">
+          <div class="shot"><img src="assets/audit-home-phone.jpg" alt="Current home page on a phone: the same heading and bio stacked in a single column." width="300" height="1462" loading="lazy"></div>
+          <figcaption>Home, phone.</figcaption>
+        </figure>
+        <figure>
+          <div class="length-strip" role="img" aria-label="Page lengths drawn to the same scale: home 4,741 pixels, Pickup in store 12,605 pixels, AI measurements 12,589 pixels. One desktop screen is about 900 pixels.">
+            <figure><div class="screen-mark">1 scr</div><figcaption>900 px</figcaption></figure>
+            <figure><img src="assets/audit-home-full.jpg" alt="" width="240" height="790" loading="lazy"><figcaption>Home<br>4,741</figcaption></figure>
+            <figure><img src="assets/audit-bopis-full.jpg" alt="" width="160" height="1400" loading="lazy"><figcaption>Pickup<br>12,605</figcaption></figure>
+            <figure><img src="assets/audit-ai-measurements-full.jpg" alt="" width="160" height="1399" loading="lazy"><figcaption>AI<br>12,589</figcaption></figure>
+          </div>
+          <figcaption>Page length to scale. Each case study is about 14 desktop screens of scrolling.</figcaption>
+        </figure>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Working, so keep it</h3>
+          <ul class="list" style="margin-top:10px">
+            <li><b>Real numbers.</b> 23 in 100 orders to pickup, 2.5× fewer returns, +20 NPS, 70% faster, live in every Lenskart store.</li>
+            <li><b>An honest failure.</b> V1 dropped checkout conversion by 10%; you called users and fixed it. Reviewers want this.</li>
+            <li><b>AI with humans in charge.</b> 85% AI–manual parity, manual stays the source of truth, every capture becomes training data.</li>
+            <li><b>Range.</b> Shipped work, product concepts, and a vibe-coded tool (Fidle.app).</li>
+            <li><b>A rare backstory.</b> Film editor for Netflix, Prime and Zakir Khan, then a Saoji cloud kitchen, then product design.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Holding it back</h3>
+          <ul class="list" style="margin-top:10px">
+            <li><b>A generic first 10 seconds.</b> “Systems thinking, storytelling, attention to detail” could be anyone. Your old bio was more specific.</li>
+            <li><b>A template look.</b> Inter, black and white, grey cards, pill nav. 36% of recent designer portfolios are on Framer.</li>
+            <li><b>The story sits in a table.</b> The editor-to-founder-to-designer arc reads like CV rows; row 1 also flips its columns.</li>
+            <li><b>Flat hierarchy.</b> Two shipped projects weigh the same as five concepts.</li>
+            <li><b>Dense case studies.</b> No 30-second version, no interactive moments, some run-on sentences where dashes were removed.</li>
+            <li><b>Missing basics.</b> No meta description or share image, no About page behind the nav link, <code>/old-home</code> still public, a <code>framer.website</code> subdomain.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R2 REVIEWERS -->
+  <section class="reel" id="reviewers">
+    <div class="wrap">
+      <div class="reel-head">
+        <span class="eyebrow">R2 · Reviewers</span>
+        <h2>How hiring managers actually read a portfolio</h2>
+        <p>The brief says fun and engaging. The people who hire you skim. Every idea on this board passes through these numbers.</p>
+      </div>
+      <div class="tiles">
+        <div class="tile"><span class="t-label">Time a homepage gets</span><span class="t-value">10–15 s</span><span class="t-src">Muzli, via <a href="https://www.thefountaininstitute.com/blog/senior-product-designers-hired" target="_blank" rel="noopener">Fountain Institute</a></span></div>
+        <div class="tile"><span class="t-label">Average portfolio review</span><span class="t-value">55 s</span><span class="t-src">16 design leaders timed · <a href="https://www.uxtools.co/blog/the-portfolio-is-becoming-a-playground" target="_blank" rel="noopener">UX Tools</a></span></div>
+        <div class="tile"><span class="t-label">Judge role fit mainly by the portfolio</span><span class="t-value">78%</span><span class="t-src">vs CV 40% · <a href="https://uxfol.io/state-of-ux-portfolios-2026" target="_blank" rel="noopener">UXfolio 2026</a></span></div>
+        <div class="tile"><span class="t-label">Prefer a portfolio website</span><span class="t-value">72%</span><span class="t-src">over PDF, Figma or slides · UXfolio 2026</span></div>
+        <div class="tile"><span class="t-label">Red flag: confusing structure</span><span class="t-value">48%</span><span class="t-src">survey summary (secondary)</span></div>
+        <div class="tile"><span class="t-label">Red flag: long, dense content</span><span class="t-value">42%</span><span class="t-src">survey summary (secondary)</span></div>
+        <div class="tile"><span class="t-label">Red flag: obvious AI overuse</span><span class="t-value">43%</span><span class="t-src">survey summary (secondary)</span></div>
+        <div class="tile"><span class="t-label">The #1 executive critique</span><span class="t-value quote">“All style, no substance”</span><span class="t-src"><a href="https://careers.usf.edu/blog/2023/08/21/survey-reveals-most-common-portfolio-mistakes-among-interactive-design-and-marketing-professionals/" target="_blank" rel="noopener">The Creative Group survey</a></span></div>
+      </div>
+      <h3 style="margin-bottom:12px">Rules that fall out of this</h3>
+      <ol class="rules">
+        <li><span><b>The 10-second test.</b> Without scrolling: who you are, your specialism, one or two proof numbers, how to contact you.</span></li>
+        <li><span><b>Concept serves comprehension.</b> If a reviewer has to learn the UI before seeing your work, the idea failed.</span></li>
+        <li><span><b>Two depths per case study.</b> A 30-second cut on top, the full story behind it.</span></li>
+        <li><span><b>Keep the messy middle.</b> V1's failure and the user calls are where trust comes from.</span></li>
+        <li><span><b>Playable proof.</b> One interactive moment per flagship case study, using the mechanic you actually designed.</span></li>
+        <li><span><b>Mobile is the first look.</b> Links get opened from LinkedIn on a phone. The phone version passes the 10-second test too.</span></li>
+        <li><span><b>Readable by machines.</b> Real text, semantic HTML, meta, share images, and an <code>llms.txt</code> for AI screeners.</span></li>
+        <li><span><b>No AI slop.</b> No generated hero images or generic AI copy; 43% treat it as a red flag.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- R3 TRENDS -->
+  <section class="reel" id="trends">
+    <div class="wrap">
+      <div class="reel-head">
+        <span class="eyebrow">R3 · Trends</span>
+        <h2>2026 trends, filtered for you</h2>
+        <p>AI made polished, template-shaped design free, so 2026 rewards what AI can't fake: specificity, personality, imperfection, craft and play. Canva called it “Imperfect by Design”, Landor “Anti-AI Crafting”, and Kittl ranked Naive Design #1.</p>
+      </div>
+      <div class="grid-3">
+        <div class="panel verdict-col">
+          <h3><span class="badge good"><span class="ic" aria-hidden="true">✓</span>Use</span></h3>
+          <ul class="verdict-list">
+            <li><b>Expressive and kinetic type</b><span>Title cards, loglines and credits are all type.</span></li>
+            <li><b>One strong concept</b><span>Award winners commit to one idea instead of stacking effects.</span></li>
+            <li><b>Human touch</b><span>Real photos, handwritten notes, your own voice.</span></li>
+            <li><b>Whimsy and easter eggs</b><span>The cheapest way to be remembered.</span></li>
+            <li><b>Portfolio as playground</b><span>Working prototypes beat static write-ups.</span></li>
+            <li><b>Mono for metadata</b><span>Timecodes, specs and measurements read naturally in mono.</span></li>
+            <li><b>Calm base, one loud accent, grain</b><span>The dominant colour formula; grain is cheap and filmic.</span></li>
+            <li><b>Indian-made type</b><span>Fontshare (Indian Type Foundry) and Ek Type's Devanagari faces.</span></li>
+          </ul>
+        </div>
+        <div class="panel verdict-col">
+          <h3><span class="badge warn"><span class="ic" aria-hidden="true">!</span>Careful</span></h3>
+          <ul class="verdict-list">
+            <li><b>Liquid Glass</b><span>Small floating controls only, never behind body text.</span></li>
+            <li><b>3D / WebGL</b><span>One moment at most, with a poster fallback.</span></li>
+            <li><b>ASCII and dither</b><span>As texture or transition, not as the reading surface.</span></li>
+            <li><b>Scroll effects</b><span>Progressive enhancement; never change scroll speed or direction.</span></li>
+            <li><b>Custom cursor and sound</b><span>Opt-in, off on touch, off by default.</span></li>
+            <li><b>AI chat on the site</b><span>Only grounded in your own content, with citations.</span></li>
+          </ul>
+        </div>
+        <div class="panel verdict-col">
+          <h3><span class="badge crit"><span class="ic" aria-hidden="true">✕</span>Avoid</span></h3>
+          <ul class="verdict-list">
+            <li><b>Preloaders and 0→100 counters</b><span>They delay the 10-second pitch and hurt load time.</span></li>
+            <li><b>Bento as the main layout</b><span>Now the SaaS default; it reads as generic.</span></li>
+            <li><b>The Inter-only minimal template</b><span>Competent and invisible, which is today's problem.</span></li>
+            <li><b>AI-generated imagery</b><span>A red flag for 43% of hiring managers.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R4 DIRECTIONS -->
+  <section class="reel" id="directions">
+    <div class="wrap">
+      <div class="reel-head">
+        <span class="eyebrow">R4 · Directions</span>
+        <h2>Three directions. Try each one.</h2>
+        <p>Each one is grounded in something only you can claim. The demos are rough sketches of the signature interaction, built so you can feel the idea before choosing it.</p>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Concept directions">
+        <button class="tab" role="tab" id="tab-a" aria-controls="panel-a" aria-selected="true" tabindex="0"><span class="swatch sw-a" aria-hidden="true"></span><span>A · Director's Cut <small>Your portfolio is an edit</small></span><span class="pick">Pick</span></button>
+        <button class="tab" role="tab" id="tab-b" aria-controls="panel-b" aria-selected="false" tabindex="-1"><span class="swatch sw-b" aria-hidden="true"></span><span>B · Checkout <small>Your portfolio is a store</small></span></button>
+        <button class="tab" role="tab" id="tab-c" aria-controls="panel-c" aria-selected="false" tabindex="-1"><span class="swatch sw-c" aria-hidden="true"></span><span>C · Studio Desk <small>Your portfolio is a desk</small></span></button>
+      </div>
+
+      <!-- Panel A -->
+      <div class="tabpanel" role="tabpanel" id="panel-a" aria-labelledby="tab-a">
+        <div class="dir-intro">
+          <div class="panel" style="display:grid;gap:12px">
+            <p class="oneliner">A former film editor presents his product work the way an editor would: as cuts, test screenings and box-office numbers.</p>
+            <p class="small">Your BOPIS story already has this shape: rough cut (V1) → test screening (10% of users, −10% conversion) → audience feedback (user calls) → re-edit (V2) → box office (23 in 100, 2.5× fewer returns).</p>
+          </div>
+          <dl class="kv panel">
+            <dt>Hero</dt><dd>Program monitor + title card: “I used to cut films. Now I cut checkout flows.”</dd>
+            <dt>Index</dt><dd>A timeline with tracks: V1 shipped, V2 lab, A1 your life story.</dd>
+            <dt>Case study</dt><dd>30-sec cut / Director's cut; deleted scenes; box office; credits.</dd>
+            <dt>Motion</dt><dd>A CBFC-style certificate: U, U/A or A.</dd>
+            <dt>Mobile</dt><dd>Reels: vertical, full-bleed clips.</dd>
+          </dl>
+        </div>
+        <div class="demo-frame">
+          <div class="demo-label"><span class="eyebrow">Demo · Scrub the timeline</span><span class="small">Drag the playhead or click a clip. Focus the timeline for ← → (clips), ↑ ↓ (tracks), J K L (back, pause, play).</span></div>
+          <div class="suite" id="demoA" data-rating="ua">
+            <div class="suite-top">
+              <span class="suite-rec"><span class="rec-dot" aria-hidden="true"></span>REC</span>
+              <span class="tc" id="aTC">00:00:00:00</span>
+              <span>SEQUENCE · SUHAS_PORTFOLIO_v2</span>
+              <span style="margin-left:auto" id="aRatingLabel">CERTIFIED U/A</span>
+              <div class="seg" role="group" aria-label="Certificate (motion level for this demo)">
+                <button type="button" data-rating="u" aria-pressed="false">U</button>
+                <button type="button" data-rating="ua" aria-pressed="true">U/A</button>
+                <button type="button" data-rating="a" aria-pressed="false">A</button>
+              </div>
+            </div>
+            <div class="monitor" id="aMonitor">
+              <span class="mon-note" aria-hidden="true">▶ On the real site, a 6-second muted loop of the project plays here</span>
+              <div class="mon-body" id="aBody" aria-live="polite">
+                <span class="mon-track" id="aTrack">V1 · SHIPPED</span>
+                <span class="mon-title" id="aTitle">Pickup in store</span>
+                <span class="mon-text" id="aText">Store pickup at checkout. V1 cost 10% of conversions; V2 shrank the choice to two lines on the cart.</span>
+                <span class="mon-metric" id="aMetric">23 in 100 orders → pickup · 2.5× fewer returns</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <div class="seg" role="group" aria-label="Cut length">
+                <button type="button" data-cut="short" aria-pressed="true">30-sec cut</button>
+                <button type="button" data-cut="long" aria-pressed="false">Director's cut</button>
+              </div>
+              <span class="suite-hint">Two depths for every project, so a skimmer and a reader both get what they came for.</span>
+            </div>
+            <div class="timeline" id="aTimeline" tabindex="0" role="slider" aria-label="Timeline playhead" aria-valuemin="0" aria-valuemax="100" aria-valuenow="10" aria-valuetext="Pickup in store">
+              <div class="track"><span class="track-label" data-track-label="v2">V2 LAB</span><div class="lane" data-lane="v2"></div></div>
+              <div class="track"><span class="track-label active" data-track-label="v1">V1 WORK</span><div class="lane" data-lane="v1"></div></div>
+              <div class="track"><span class="track-label" data-track-label="a1">A1 LIFE</span><div class="lane" data-lane="a1"></div></div>
+              <div class="playhead" id="aPlayhead" aria-hidden="true"></div>
+            </div>
+            <p class="suite-hint"><span class="kbd">J</span> <span class="kbd">K</span> <span class="kbd">L</span> are the real editor shortcuts for back, pause and play.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel B -->
+      <div class="tabpanel" role="tabpanel" id="panel-b" aria-labelledby="tab-b" hidden>
+        <div class="dir-intro">
+          <div class="panel" style="display:grid;gap:12px">
+            <p class="oneliner">The designer behind Lenskart's store-pickup checkout presents himself as a well-designed product page. Every interaction is a commerce UX work sample.</p>
+            <p class="small">Precedent: Philippe Dubost's Amazon-page CV (2013) drew about 1.5M visits and got him hired within months. Tone reference: Teenage Engineering, playful and premium rather than Amazon-cluttered.</p>
+          </div>
+          <dl class="kv panel">
+            <dt>Hero</dt><dd>A product detail page for you: availability, delivery options, specs.</dd>
+            <dt>Work</dt><dd>Bestsellers, each a PDP with specs (metrics) and reviews (real quotes only).</dd>
+            <dt>Journey</dt><dd>Order history: past roles marked Delivered.</dd>
+            <dt>Contact</dt><dd>Checkout with a shortlist cart, then order tracking.</dd>
+            <dt>Risk</dt><dd>Can read as gimmicky; ties you to commerce roles.</dd>
+          </dl>
+        </div>
+        <div class="demo-frame">
+          <div class="demo-label"><span class="eyebrow">Demo · Shortlist, then check out</span><span class="small">The spice buttons here are the same control as the top bar.</span></div>
+          <div class="store" id="demoB">
+            <div class="render" aria-hidden="true">
+              <span class="ribbon">Only 1 left</span>
+              <span class="monogram">SP</span>
+              <span class="sku"><span>SKU · PD-2026-SP</span><span>Made in Nagpur</span></span>
+            </div>
+            <div class="pdp">
+              <h4>Suhas Paunikar, Product Designer</h4>
+              <span class="stock"><span class="dot" aria-hidden="true"></span>In stock · available from {month}</span>
+              <div class="delivery" aria-label="Delivery options">
+                <div><span>Remote</span><span>Available ✓</span></div>
+                <div><span>Relocation</span><span>Available ✓</span></div>
+                <div><span>Pick up in office</span><span>{your city}</span></div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <span class="fine" id="bSpiceLabel">Spice level</span>
+                <div class="seg" role="group" aria-labelledby="bSpiceLabel">
+                  <button type="button" data-spice-set="mild" aria-pressed="false">Mild</button>
+                  <button type="button" data-spice-set="medium" aria-pressed="true">Medium</button>
+                  <button type="button" data-spice-set="saoji" aria-pressed="false">Saoji</button>
+                </div>
+              </div>
+              <div class="bestsellers">
+                <div class="item"><div><b>Pickup in store</b><span>23 in 100 orders → pickup · 2.5× fewer returns</span></div><button type="button" class="btn" data-add="bopis" aria-pressed="true">In cart ✓</button></div>
+                <div class="item"><div><b>AI progressive measurements</b><span>15–20 min → 3–5 min · every store</span></div><button type="button" class="btn" data-add="ai" aria-pressed="false">Add to cart</button></div>
+                <div class="item"><div><b>Fidle.app</b><span>Vibe-coded effects tool · limited edition</span></div><button type="button" class="btn" data-add="fidle" aria-pressed="false">Add to cart</button></div>
+              </div>
+              <div class="cart-row">
+                <button type="button" class="btn" id="bCartToggle" aria-expanded="false" aria-controls="bDrawer">Cart<span class="cart-count" id="bCount">1</span></button>
+                <button type="button" class="btn primary" id="bCheckout">Checkout</button>
+                <span class="fine">Example cart. Checkout fills a contact form with the projects picked.</span>
+              </div>
+              <div class="drawer" id="bDrawer" hidden>
+                <ul id="bCartList"></ul>
+                <p class="fine">Home delivery = email · Pickup = a 20-minute call</p>
+              </div>
+              <div class="drawer" id="bTracking" hidden>
+                <b>Order tracking</b>
+                <ol class="tracking" id="bTrackList">
+                  <li data-step="0"><span>Message received</span></li>
+                  <li data-step="1"><span>Suhas is reading</span></li>
+                  <li data-step="2"><span>Reply on the way · usually within 24h</span></li>
+                </ol>
+                <p class="fine">This is the staged order card from your own BOPIS case study, reused as a contact confirmation.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel C -->
+      <div class="tabpanel" role="tabpanel" id="panel-c" aria-labelledby="tab-c" hidden>
+        <div class="dir-intro">
+          <div class="panel" style="display:grid;gap:12px">
+            <p class="oneliner">A top-down desk of real objects from your work and life. Pick one up to open its story, or tidy the desk into a neat index.</p>
+            <p class="small">Rides two 2026 trends: trinket or catalogue design (objects as identity) and blueprint design (annotated spec sheets suit “systems thinking”).</p>
+          </div>
+          <dl class="kv panel">
+            <dt>Objects</dt><dd>Spectacles, an order slip, a film reel, a spice tin, a phone, sticky notes.</dd>
+            <dt>Open</dt><dd>A blueprint spec sheet with numbered annotations.</dd>
+            <dt>Recruiters</dt><dd>“Tidy up” snaps everything into a list.</dd>
+            <dt>Extra</dt><dd>The desk lamp follows the visitor's local time (built-in dark mode).</dd>
+            <dt>Risk</dt><dd>Slowest to build; hardest on mobile; closest to existing desk/OS sites.</dd>
+          </dl>
+        </div>
+        <div class="demo-frame">
+          <div class="demo-label"><span class="eyebrow">Demo · Drag things around, then tidy up</span>
+            <button type="button" class="btn" id="cTidy" aria-pressed="false">Tidy up ↦ list</button>
+          </div>
+          <div class="desk-wrap">
+            <div class="desk" id="cDesk" role="group" aria-label="Desk of objects. Drag to move; press Enter to open; arrow keys nudge.">
+              <button type="button" class="obj" data-obj="0" style="left:6%;top:12%"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><circle cx="20" cy="36" r="11"/><circle cx="44" cy="36" r="11"/><path d="M31 34c0-3 2-4 1-4s1 1 1 4"/><path d="M9 34L4 22M55 34l5-12"/></svg><span class="tag">01 · Spectacles</span></button>
+              <button type="button" class="obj" data-obj="1" style="left:36%;top:6%"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M16 6h32v50l-5-4-5 4-6-4-6 4-5-4-5 4z" fill="#fffdf7"/><path d="M23 18h18M23 26h18M23 34h11"/></svg><span class="tag">02 · Order slip</span></button>
+              <button type="button" class="obj" data-obj="2" style="left:66%;top:14%"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><circle cx="32" cy="32" r="24"/><circle cx="32" cy="32" r="4"/><circle cx="32" cy="17" r="5"/><circle cx="46" cy="28" r="5"/><circle cx="41" cy="44" r="5"/><circle cx="23" cy="44" r="5"/><circle cx="18" cy="28" r="5"/></svg><span class="tag">03 · Film reel</span></button>
+              <button type="button" class="obj" data-obj="3" style="left:10%;top:56%"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="16" y="16" width="32" height="40" rx="6" fill="#e2543a"/><rect x="14" y="9" width="36" height="9" rx="3" fill="#fffdf7"/><path d="M24 34c6-6 14-4 16 2-6 1-10 4-12 8" stroke="#fffdf7"/></svg><span class="tag">04 · Spice tin</span></button>
+              <button type="button" class="obj" data-obj="4" style="left:42%;top:52%"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><rect x="19" y="5" width="26" height="54" rx="6" fill="#1c140c"/><path d="M28 10h8" stroke="#fffdf7"/><rect x="23" y="16" width="18" height="30" rx="2" fill="#fffdf7" stroke="none"/></svg><span class="tag">05 · Phone</span></button>
+              <button type="button" class="obj" data-obj="5" style="left:72%;top:56%"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M10 10h44v32L42 54H10z" fill="#f7d84a"/><path d="M42 54V42h12"/><path d="M18 22h22M18 30h16"/></svg><span class="tag">06 · Sticky notes</span></button>
+            </div>
+            <div class="sheet" id="cSheet" aria-live="polite">
+              <span class="sheet-id" id="cId">SPEC SHEET · OBJECT 02</span>
+              <h4 id="cTitle">Order slip</h4>
+              <dl class="kv" id="cKv">
+                <dt>Opens</dt><dd>Pickup in store (Lenskart)</dd>
+                <dt>Annotation</dt><dd>23 in 100 online orders now picked up in store</dd>
+                <dt>Note</dt><dd>V1 cost 10% conversion; V2 fixed it with a two-line widget</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin:28px 0 12px">Scorecard</h3>
+      <p class="small" style="margin-bottom:12px">Weighted for your brief (fun, engaging, stand out immediately): uniqueness ×2, fun ×1.5, 10-second clarity ×1.5, the rest ×1. Scores 1–5; for gimmick risk, 5 means low risk.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Criterion</th><th class="num">Weight</th><th class="num"><span class="colhead"><span class="swatch sw-a" aria-hidden="true"></span>A · Cut</span></th><th class="num"><span class="colhead"><span class="swatch sw-b" aria-hidden="true"></span>B · Checkout</span></th><th class="num"><span class="colhead"><span class="swatch sw-c" aria-hidden="true"></span>C · Desk</span></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Only-you uniqueness</td><td class="num">×2</td><td class="num">5</td><td class="num">3.5</td><td class="num">3</td></tr>
+            <tr><td>Fun and replay value</td><td class="num">×1.5</td><td class="num">5</td><td class="num">4</td><td class="num">5</td></tr>
+            <tr><td>10-second clarity</td><td class="num">×1.5</td><td class="num">4</td><td class="num">5</td><td class="num">3</td></tr>
+            <tr><td>Relevance to roles you'll apply for</td><td class="num">×1</td><td class="num">4</td><td class="num">4</td><td class="num">3</td></tr>
+            <tr><td>Mobile quality</td><td class="num">×1</td><td class="num">4.5</td><td class="num">5</td><td class="num">2</td></tr>
+            <tr><td>Build effort (5 = easiest)</td><td class="num">×1</td><td class="num">3</td><td class="num">4</td><td class="num">2</td></tr>
+            <tr><td>Low gimmick risk</td><td class="num">×1</td><td class="num">4</td><td class="num">3</td><td class="num">3</td></tr>
+            <tr class="total"><td>Weighted total</td><td class="num"></td><td class="num">39</td><td class="num">36.5</td><td class="num">28</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small scroll-hint">Scroll the table sideways to compare all three.</p>
+      <p style="margin-top:14px" class="measure"><b>Recommendation: A, Director's Cut.</b> It's the most only-you idea, it gives your case studies a structure that's easier to follow, it suits your taste for visual effects, and it works on phones as reels. B is a close second and wins if you weight clarity and launch speed higher, or if you're targeting commerce roles. Keep C's best mechanic (“tidy up”) as a small moment rather than the whole site. Whichever you pick, don't mix metaphors; re-skin borrowed mechanics in the chosen language.</p>
+    </div>
+  </section>
+
+  <!-- R5 INTERACTIONS -->
+  <section class="reel" id="interactions">
+    <div class="wrap">
+      <div class="reel-head">
+        <span class="eyebrow">R5 · Interactions</span>
+        <h2>Signature interactions worth building</h2>
+        <p>One signature interaction people talk about, a few supporting micro-interactions, and easter eggs for the curious. Everything skippable, nothing blocking the 10-second pitch.</p>
+      </div>
+      <div class="cards">
+        <article class="card"><h3>🌶 Spice level</h3><p>Mild, Medium or Saoji motion. Mild is recruiter mode and the default when the OS asks for reduced motion. It tells the cloud-kitchen story and doubles as accessibility.</p><div class="effort"><span class="chip">Effort S–M</span><span class="chip">Any direction</span></div></article>
+        <article class="card"><h3>30-sec cut / Director's cut</h3><p>Two depths for every case study. Fixes the 55-second problem and the “too dense” red flag in a way that feels intentional.</p><div class="effort"><span class="chip">Effort S</span><span class="chip">Any direction</span></div></article>
+        <article class="card"><h3>Playable slices</h3><p>Toggle the BOPIS cart between V1 and V2 and watch ₹2000 become ₹1950. Align a pupil marker with and without the zoom loupe. The strongest proof you can show.</p><div class="effort"><span class="chip">Effort M each</span><span class="chip">Case studies</span></div></article>
+        <article class="card"><h3>Timeline scrubber</h3><p>The project index as an edit: drag the playhead, J K L to move, Space to play. Never hijacks page scroll.</p><div class="effort"><span class="chip">Effort M</span><span class="chip">Direction A</span></div></article>
+        <article class="card"><h3>End-credits footer</h3><p>Real collaborators from each project roll like film credits, followed by a post-credits scene. Warm, humble, memorable.</p><div class="effort"><span class="chip">Effort S</span><span class="chip">Any direction</span></div></article>
+        <article class="card"><h3>⌘K, copy email, llms.txt</h3><p>Jump anywhere, copy your email in one click, and give AI screeners a clean summary of you (Brian Lovin's site already publishes one).</p><div class="effort"><span class="chip">Effort S</span><span class="chip">Any direction</span></div></article>
+      </div>
+      <div class="grid-2" style="margin-top:16px">
+        <div class="panel">
+          <h3>Easter eggs</h3>
+          <ul class="list" style="margin-top:10px">
+            <li><b>Type “saoji”</b> to max out the spice and get the cloud-kitchen story (try it on this page).</li>
+            <li><b>Konami code</b> opens a blooper reel of explorations that didn't ship.</li>
+            <li><b>Post-credits scene</b> teases what you're building next.</li>
+            <li><b>/404 “Scene missing”</b>: a tiny find-the-frame game.</li>
+            <li><b>Console hello</b> links to Fidle.app and the repo.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Guardrails</h3>
+          <ul class="list" style="margin-top:10px">
+            <li><b>Reduced motion by default</b> when the OS asks; a visible control lets people opt in.</li>
+            <li><b>Sound off by default</b>, never on touch-only custom cursors.</li>
+            <li><b>No scroll hijacking</b>; horizontal controls always have buttons and links as alternatives.</li>
+            <li><b>Real quotes only</b> in reviews and testimonials.</li>
+            <li><b>One gamification layer</b> at most: “3 of 7 secrets found”.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R6 STRUCTURE -->
+  <section class="reel" id="structure">
+    <div class="wrap">
+      <div class="reel-head">
+        <span class="eyebrow">R6 · Structure</span>
+        <h2>Site structure</h2>
+        <p>Written for Director's Cut; the skeleton is the same for every direction, only the labels change. Wireframes, copy drafts and the content checklist are in <code>research/07-site-structure.md</code>.</p>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3 style="margin-bottom:10px">Sitemap</h3>
+          <ul class="tree">
+            <li>/ <span class="note">10-second hero, timeline index, box office, lab, story, reviews, contact, credits</span>
+              <ul>
+                <li>/work/pickup-in-store <span class="note">flagship 1</span></li>
+                <li>/work/ai-progressive-measurements <span class="note">flagship 2</span></li>
+                <li>/work/&lt;third&gt; <span class="note">optional, from Ting</span></li>
+                <li>/lab <span class="note">Fidle.app first, then concepts</span></li>
+                <li>/about <span class="note">“Previously on…” in seasons</span></li>
+                <li>/now <span class="note">what you're doing and looking for</span></li>
+                <li>/resume <span class="note">web + PDF</span></li>
+                <li>/colophon <span class="note">how the site was built</span></li>
+                <li>/404 <span class="note">“Scene missing” game</span></li>
+                <li>/llms.txt <span class="note">for AI screeners</span></li>
+              </ul>
+            </li>
+          </ul>
+          <p class="small" style="margin-top:10px">Redirect <code>/bopis</code> and <code>/progressive-measurements</code> to the new paths; retire <code>/old-home</code>.</p>
+        </div>
+        <div class="panel">
+          <h3 style="margin-bottom:10px">Home, desktop</h3>
+          <div class="wire" aria-label="Home page wireframe">
+            <div class="w">NAV · ● REC · Work · Lab · About · ⌘K · U | U/A | A · Copy email</div>
+            <div class="row">
+              <div class="w"><b>Program monitor</b>“I used to cut films. Now I cut checkout flows.” · 2 proof numbers · Watch the 30-sec cut · Résumé</div>
+              <div class="w"><b>Status</b>Open to roles · local time</div>
+            </div>
+            <div class="w"><b>Timeline</b><div class="tl"><i></i><i class="on"></i><i></i></div>V2 lab · V1 shipped · A1 life story</div>
+            <div class="w"><b>Box office</b>23 in 100 · 2.5× · +20 NPS</div>
+            <div class="row"><div class="w"><b>Lab</b>Fidle.app + 4 concepts</div><div class="w"><b>Previously on…</b>S1–S7</div></div>
+            <div class="row"><div class="w"><b>Reviews</b>2–3 real quotes</div><div class="w"><b>Contact</b>Copy email · Book 20 min</div></div>
+            <div class="w"><b>End credits</b>Piyush Gupta · Vikraman Sridharan · Rahul Rupani · Shivesh Mehta · Shubham</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:16px">
+        <div class="panel">
+          <h3 style="margin-bottom:6px">Case-study template: “The Cut”</h3>
+          <p class="small" style="margin-bottom:8px">Mapped from your Pickup in store case study.</p>
+          <ol class="cut-steps">
+            <li><b>Title card</b><span>Logline, 3 metric chips, role, team, shipped status, 30-sec / Director's cut toggle.</span></li>
+            <li><b>Cold open</b><span>A second attempt at a feature that had failed once.</span></li>
+            <li><b>The script</b><span>Pickup as a margin lever; no COD for pickup; room for a promo tag.</span></li>
+            <li><b>Rough cut</b><span>Competitor study, explorations, V1. Options 1–3 become deleted scenes.</span></li>
+            <li><b>Test screening</b><span>10% rollout, −10% conversion, user calls: some “drops” walked into stores.</span></li>
+            <li><b>Re-edit</b><span>Lighter, not louder: a two-line widget with a live ₹50 saving. Playable V1 vs V2.</span></li>
+            <li><b>Box office</b><span>23–25% adoption, conversion recovered, 2.5× fewer returns, +20 NPS.</span></li>
+            <li><b>Director's commentary and credits</b><span>What you'd do differently; Piyush, Vikraman, Shivesh, Shubham.</span></li>
+          </ol>
+        </div>
+        <div class="panel">
+          <h3 style="margin-bottom:6px">Phone: reels</h3>
+          <p class="small" style="margin-bottom:10px">Full-height sections with native vertical scroll-snap and a bottom CTA bar in thumb reach.</p>
+          <div class="phones" aria-label="Three phone screens">
+            <div class="phone"><span>● REC · SUHAS</span><b>I used to cut films. Now I cut checkout flows.</b><span>PD · commerce · AI · ● open to roles</span><span class="swipe">swipe ↑</span></div>
+            <div class="phone"><span>V1 · SHIPPED · 1/7</span><div class="ph-media"></div><b>Pickup in store</b><span>23 in 100 → pickup</span><span class="swipe">swipe ↑</span></div>
+            <div class="phone"><span>PREVIOUSLY ON…</span><b>S3 · Film editor</b><span>Netflix · Prime · Zakir Khan</span><b>S4 · Founder</b><span>Saoji Spice</span><span class="swipe">swipe ↑</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R7 REFERENCES -->
+  <section class="reel" id="references">
+    <div class="wrap">
+      <div class="reel-head">
+        <span class="eyebrow">R7 · References</span>
+        <h2>References, and what to take from each</h2>
+        <p>Gathered through search; this environment couldn't open the sites themselves, so click through and judge them with your own eyes. The full list (with Framer components that prototype each direction) is in <code>research/04-references.md</code>.</p>
+      </div>
+      <div class="refs">
+        <div class="panel">
+          <h3 style="margin-bottom:10px">One big idea</h3>
+          <ul>
+            <li><a href="https://bruno-simon.com" target="_blank" rel="noopener">Bruno Simon</a><span>Drive a car around an island; rebuilt for WebGPU. Total commitment to one metaphor.</span></li>
+            <li><a href="https://www.rleonardi.com/interactive-resume/" target="_blank" rel="noopener">Robby Leonardi</a><span>A career told as game levels. Your “Previously on…” in another medium.</span></li>
+            <li><a href="https://www.famouscampaigns.com/2013/02/a-very-modern-cv-phildub-com-goes-viral/" target="_blank" rel="noopener">Philippe Dubost's Amazon CV</a><span>The commerce metaphor worked for a product person. Precedent for B.</span></li>
+            <li><a href="https://www.awwwards.com/inspiration/mariano-pascual-cartoon-desktop-portfolio" target="_blank" rel="noopener">Mariano Pascual</a><span>A retro desktop visitors can recolour and rearrange.</span></li>
+            <li><a href="https://lynnandtonic.com" target="_blank" rel="noopener">Lynn Fisher</a><span>A yearly redesign; the archive itself tells a story.</span></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3 style="margin-bottom:10px">Craft and interaction</h3>
+          <ul>
+            <li><a href="https://rauno.me" target="_blank" rel="noopener">Rauno Freiberg</a><span>Invisible interaction details; an OS-like personal site.</span></li>
+            <li><a href="https://emilkowal.ski" target="_blank" rel="noopener">Emil Kowalski</a><span>Animation rules: UI motion under 300ms, never ease-in.</span></li>
+            <li><a href="https://brianlovin.com" target="_blank" rel="noopener">Brian Lovin</a><span>A participatory product designer's site with an llms.txt.</span></li>
+            <li><a href="https://joshwcomeau.com" target="_blank" rel="noopener">Josh W. Comeau</a><span>Whimsy, tasteful sound, a widget per article.</span></li>
+            <li><a href="https://teenage.engineering" target="_blank" rel="noopener">Teenage Engineering</a><span>Playful minimalism and mono type. The tone for B.</span></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3 style="margin-bottom:10px">Product-design benchmarks</h3>
+          <ul>
+            <li><a href="https://simonpan.com" target="_blank" rel="noopener">Simon Pan</a><span>The case-study standard hiring managers point to.</span></li>
+            <li><a href="https://www.awwwards.com/sites/ux-ui-designer-portfolio" target="_blank" rel="noopener">Kristian Ulrych</a><span>Product case studies that still won an Awwwards mention (Jun 2026).</span></li>
+            <li><a href="https://www.wallofportfolios.in" target="_blank" rel="noopener">Wall of Portfolios</a><span>Your local benchmark set; Swiggy, CRED and Zomato designers use it.</span></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3 style="margin-bottom:10px">2026 award winners</h3>
+          <ul>
+            <li><a href="https://www.awwwards.com/sites/g-colombel-portfolio-2026" target="_blank" rel="noopener">G. Colombel, Portfolio 2026</a><span>Awwwards Site of the Day, 28 Oct 2026.</span></li>
+            <li><a href="https://www.awwwards.com/sites/leo-parpeix-portfolio-2026" target="_blank" rel="noopener">Léo Parpeix, Portfolio 2026</a><span>Awwwards Site of the Day, 14 Sep 2026.</span></li>
+            <li><a href="https://www.awwwards.com/honors/winners" target="_blank" rel="noopener">Awwwards Portfolio Honors</a><span>Jesper Landberg, NOTHIN', Lama Lama and others.</span></li>
+            <li><a href="https://www.awwwards.com/websites/framer/" target="_blank" rel="noopener">Best Framer-built sites</a><span>Useful if you stay on Framer.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R8 BUILD -->
+  <section class="reel" id="build">
+    <div class="wrap">
+      <div class="reel-head">
+        <span class="eyebrow">R8 · Build</span>
+        <h2>Build plan</h2>
+        <p>Framer gets you live fastest. Code in this repo gives you full control and a strong “designer who builds” signal. Details, stack and budgets are in <code>research/08-build-plan.md</code>.</p>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Framer</h3>
+          <ul class="list" style="margin-top:10px">
+            <li><b>Fastest launch</b>, about 2 weeks; you're fluent and already own components.</li>
+            <li>Signature pieces as <b>code components and overrides</b>; Framer shaders (Mar 2026) cover grain and ripple.</li>
+            <li>CMS 3.0 for case studies; static files and redirects are supported.</li>
+            <li>Neutral signal: 36% of designer portfolios are already Framer.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Code in this repo (my lean)</h3>
+          <ul class="list" style="margin-top:10px">
+            <li><b>Astro 5</b> + MDX case studies + small React islands for the interactive parts.</li>
+            <li><b>GSAP</b> (free since 2025) for motion; cross-document View Transitions for page cuts.</li>
+            <li>Deployed on Vercel; an open repo and colophon become portfolio pieces.</li>
+            <li>About 3–5 weeks part-time with Claude Code.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h3>Budgets</h3>
+        <p class="small" style="margin-top:6px">Load time under 2s on a mid-range Android on 4G, no preloader, under 120 KB of JavaScript on first load, hero video under 1.5 MB with a poster frame, reduced motion by default when asked, everything keyboard-operable, AA contrast, sound off by default.</p>
+      </div>
+      <h3 style="margin:24px 0 12px">Roadmap, part-time</h3>
+      <div class="weeks">
+        <div class="week"><span class="wk">WEEK 0</span><h4>Decide</h4><p>Direction, platform, target roles and market.</p></div>
+        <div class="week"><span class="wk">WEEK 1</span><h4>Content</h4><p>Rewrite both case studies as cuts; hero copy; ask for 3 quotes.</p></div>
+        <div class="week"><span class="wk">WEEK 2</span><h4>System</h4><p>Type, colour grades, grain, motion tokens; hi-fi home and case study.</p></div>
+        <div class="week"><span class="wk">WEEK 3</span><h4>Skeleton</h4><p>All pages, mobile reels, preview deploys.</p></div>
+        <div class="week"><span class="wk">WEEK 4</span><h4>Signature</h4><p>Timeline, motion control, two playable slices, credits, ⌘K, eggs.</p></div>
+        <div class="week"><span class="wk">WEEK 5</span><h4>Launch</h4><p>Performance and a11y pass, meta, llms.txt, domain, 5-second tests.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- R9 QUESTIONS -->
+  <section class="reel" id="questions">
+    <div class="wrap">
+      <div class="reel-head">
+        <span class="eyebrow">R9 · Questions</span>
+        <h2>Questions for you</h2>
+        <p>These decide the next step.</p>
+      </div>
+      <ol class="questions measure">
+        <li><b>Direction.</b> Does Director's Cut, Checkout or Studio Desk feel most like you? Any you'd veto?</li>
+        <li><b>Platform.</b> Stay on Framer, or build in code in this repo? When do you need it live?</li>
+        <li><b>Target.</b> Which roles and market: India (Bengaluru?), the US, or remote? Commerce, AI products, or both? Your Framer account uses a New York time zone; are you based there now?</li>
+        <li><b>Rights.</b> Can you show Lenskart screens and recordings publicly? Any OML editing work you're allowed to show?</li>
+        <li><b>Social proof.</b> Could you get 2–3 short quotes from PMs or engineers you worked with?</li>
+        <li><b>Third project.</b> Is there a shipped Ting project strong enough to be a third case study?</li>
+        <li><b>Name and domain.</b> Do you own a custom domain? Is “soskiller” a handle you want on the site?</li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<footer class="credits">
+  <div class="wrap">
+    <span class="eyebrow">End credits</span>
+    <div class="roll-mask">
+      <div class="roll">
+        <div><div class="role">Starring</div><div class="name">Suhas Paunikar</div></div>
+        <div><div class="role">Research</div><div class="name">About 100 web searches · 130+ sources</div></div>
+        <div><div class="role">Source footage</div><div class="name">Framer project “Suhas Portfolio”, read directly</div></div>
+        <div><div class="role">Supporting cast to credit on the real site</div><div class="name">Piyush Gupta · Vikraman Sridharan · Rahul Rupani · Shivesh Mehta · Shubham</div></div>
+        <div><div class="role">Filmed on location</div><div class="name">suhascpaunikar/soskillerportfolio · research/</div></div>
+        <div><div class="role">Catering</div><div class="name">Saoji Spice (closed, lessons kept)</div></div>
+      </div>
+    </div>
+    <p class="post-credits">Post-credits scene: set the Spice level to Saoji to roll these credits.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var store = {
+    get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
+  };
+  var reduce = false;
+  try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+  /* ---------- Toast ---------- */
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.hidden = true; }, 2800);
+  }
+
+  /* ---------- Spice level ---------- */
+  function spice() { return root.getAttribute('data-spice') || 'medium'; }
+  function chilliRain() {
+    if (spice() !== 'saoji') return;
+    for (var i = 0; i < 16; i++) {
+      var s = document.createElement('span');
+      s.className = 'chilli';
+      s.setAttribute('aria-hidden', 'true');
+      s.textContent = '🌶';
+      s.style.left = (Math.random() * 96) + 'vw';
+      s.style.fontSize = (14 + Math.random() * 18) + 'px';
+      s.style.animationDelay = (Math.random() * 0.7) + 's';
+      document.body.appendChild(s);
+      (function (el) { setTimeout(function () { el.remove(); }, 3000); })(s);
+    }
+  }
+  function setSpice(level, opts) {
+    opts = opts || {};
+    root.setAttribute('data-spice', level);
+    var buttons = document.querySelectorAll('[data-spice-set]');
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute('aria-pressed', String(buttons[i].getAttribute('data-spice-set') === level));
+    }
+    if (!opts.silent) store.set('sp-spice', level);
+    if (opts.announce) {
+      toast({ mild: 'Mild: motion off. This is what recruiter mode feels like.', medium: 'Medium: tasteful motion.', saoji: 'Saoji: grain, rolling credits, everything on.' }[level]);
+    }
+    if (level === 'saoji' && opts.rain) chilliRain();
+  }
+  var saved = store.get('sp-spice');
+  setSpice(saved || (reduce ? 'mild' : 'medium'), { silent: true });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-spice-set]') : null;
+    if (!b) return;
+    setSpice(b.getAttribute('data-spice-set'), { announce: true, rain: true });
+  });
+  var typed = '';
+  document.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    if (!e.key || e.key.length !== 1) return;
+    typed = (typed + e.key.toLowerCase()).slice(-5);
+    if (typed === 'saoji') {
+      setSpice('saoji', { rain: true });
+      toast('Saoji unlocked: a Nagpur cuisine with 30+ spices. Suhas once ran a Saoji cloud kitchen.');
+    }
+  });
+
+  /* ---------- Tabs ---------- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  function selectTab(tab, focus) {
+    tabs.forEach(function (t) {
+      var sel = t === tab;
+      t.setAttribute('aria-selected', String(sel));
+      t.tabIndex = sel ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !sel;
+    });
+    if (focus) tab.focus();
+  }
+  tabs.forEach(function (tab, i) {
+    tab.addEventListener('click', function () { selectTab(tab); });
+    tab.addEventListener('keydown', function (e) {
+      var n = null;
+      if (e.key === 'ArrowRight') n = tabs[(i + 1) % tabs.length];
+      if (e.key === 'ArrowLeft') n = tabs[(i - 1 + tabs.length) % tabs.length];
+      if (e.key === 'Home') n = tabs[0];
+      if (e.key === 'End') n = tabs[tabs.length - 1];
+      if (n) { e.preventDefault(); selectTab(n, true); }
+    });
+  });
+
+  /* ---------- Demo A: Director's Cut ---------- */
+  var A = {
+    v1: [
+      { s: 0, e: 44, track: 'V1 · SHIPPED · LENSKART', title: 'Pickup in store',
+        short: 'Store pickup at checkout. V1 cost 10% of conversions; V2 shrank the choice to two lines on the cart.',
+        long: 'Rough cut: a dedicated delivery-or-pickup step. Test screening: 10% of users, 10–12% adoption, −10% checkout conversion. Audience feedback: user calls showed some “drops” walked into stores. Re-edit: a two-line widget with a live ₹50 saving. Box office: 23–25% adoption, conversion recovered, +20 NPS.',
+        metric: '23 in 100 orders → pickup · 2.5× fewer returns' },
+      { s: 48, e: 96, track: 'V1 · SHIPPED · LENSKART', title: 'AI progressive measurements',
+        short: 'An iPad flow that lets any store staff member take progressive-lens measurements.',
+        long: 'Two-device workflow. A QR scan gate, because a measurement is only true for one frame on one face. Guides turn red when the customer drifts. A zoom loupe for pupil markers. AI and manual values side by side, staff decide. Pilot: 85% parity, so manual stayed the source of truth. Now in every Lenskart store in India.',
+        metric: '15–20 min → 3–5 min · 70% faster' }
+    ],
+    v2: [
+      { s: 0, e: 19, track: 'V2 · LAB · SHIPPED TOOL', title: 'Fidle.app', short: 'A visual-effects playground vibe-coded with Claude Code. Copy, embed, go in Framer.', long: 'Built end to end with Claude Code. Proof of the builder signal hiring managers ask for: working tools, not just mockups. Deserves top billing in the lab.', metric: 'Live tool' },
+      { s: 20, e: 38, track: 'V2 · LAB · CONCEPT', title: 'YouTube × Google Maps', short: 'Liked a place while watching a video? Save it straight to Google Maps.', long: 'A cross-product concept. Label it clearly as a concept and keep it short: problem, idea, prototype.', metric: 'Concept' },
+      { s: 39, e: 57, track: 'V2 · LAB · CONCEPT', title: 'Swiggy Ad Discount', short: 'Watch a short ad, answer a question, get a discount on your order.', long: 'A monetisation concept with a clear value exchange. Keep it to one screen of story and one prototype.', metric: 'Concept' },
+      { s: 58, e: 76, track: 'V2 · LAB · CONCEPT', title: 'Noon AI Search', short: 'Type what you need and AI builds the shopping list.', long: 'An AI commerce concept that pairs naturally with your shipped AI work.', metric: 'Concept' },
+      { s: 77, e: 95, track: 'V2 · LAB · CONCEPT', title: 'CRED Milestones', short: 'Track every credit-card milestone and redeem them in one place.', long: 'A fintech concept. Show the one interaction that makes it click.', metric: 'Concept' }
+    ],
+    a1: [
+      { s: 0, e: 10, track: 'A1 · PREVIOUSLY ON · S1', title: 'Event Capital', short: 'Operations intern, 2016.', long: 'Season 1: how live operations run, and break.', metric: '2016' },
+      { s: 10, e: 20, track: 'A1 · PREVIOUSLY ON · S2', title: 'Pinstorm', short: 'Digital marketing intern, 2018.', long: 'Season 2: attention is earned in seconds.', metric: '2018' },
+      { s: 20, e: 38, track: 'A1 · PREVIOUSLY ON · S3', title: 'OML', short: 'Freelance video editor. Edited for Netflix, Prime and Zakir Khan.', long: 'Season 3: pacing, story, and cutting anything that doesn’t serve the scene. The root of the Director’s Cut idea.', metric: '2019–21' },
+      { s: 38, e: 50, track: 'A1 · PREVIOUSLY ON · S4', title: 'Saoji Spice', short: 'Started a cloud kitchen.', long: 'Season 4: unit economics, and delivery apps from the merchant’s side. Also the origin of the Spice level control.', metric: '2021–22' },
+      { s: 50, e: 64, track: 'A1 · PREVIOUSLY ON · S5', title: 'Ting', short: 'UX designer, then freelance.', long: 'Season 5: the switch into product design.', metric: '2022–23' },
+      { s: 64, e: 92, track: 'A1 · PREVIOUSLY ON · S6', title: 'Lenskart', short: 'Product designer: checkout, in-store tools, AI.', long: 'Season 6: store pickup at checkout and an AI measurement tool now in every store.', metric: '2024–26' },
+      { s: 92, e: 100, track: 'A1 · PREVIOUSLY ON · S7', title: 'Now', short: 'Vibe-coding tools and looking for the next team.', long: 'Season 7 is being written. Your team could be in it.', metric: '2026' }
+    ]
+  };
+  var trackOrder = ['v2', 'v1', 'a1'];
+  var aState = { track: 'v1', p: 10, cut: 'short', playing: null, dir: 1, lastKey: '' };
+  var demoA = document.getElementById('demoA');
+  var timeline = document.getElementById('aTimeline');
+  var playhead = document.getElementById('aPlayhead');
+  var aBody = document.getElementById('aBody');
+  var aMonitor = document.getElementById('aMonitor');
+
+  trackOrder.forEach(function (key) {
+    var lane = timeline.querySelector('[data-lane="' + key + '"]');
+    A[key].forEach(function (c, idx) {
+      var el = document.createElement('div');
+      el.className = 'clip ' + key;
+      el.style.left = c.s + '%';
+      el.style.width = (c.e - c.s) + '%';
+      el.textContent = c.title;
+      el.setAttribute('data-track', key);
+      el.setAttribute('data-idx', String(idx));
+      lane.appendChild(el);
+    });
+  });
+
+  function clipAt(track, p) {
+    var list = A[track];
+    for (var i = 0; i < list.length; i++) { if (p >= list[i].s && p < list[i].e) return i; }
+    return -1;
+  }
+  function timecode(p) {
+    var total = p / 100 * 60;
+    var sec = Math.floor(total);
+    var fr = Math.floor((total - sec) * 24);
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    return '00:00:' + pad(sec) + ':' + pad(fr);
+  }
+  var lastKey = '';
+  function renderA() {
+    var lane = timeline.querySelector('.lane');
+    var laneRect = lane.getBoundingClientRect();
+    var tlRect = timeline.getBoundingClientRect();
+    var x = (laneRect.left - tlRect.left) + laneRect.width * aState.p / 100;
+    playhead.style.marginLeft = '0px';
+    playhead.style.left = x + 'px';
+    document.getElementById('aTC').textContent = timecode(aState.p);
+    var labels = timeline.querySelectorAll('[data-track-label]');
+    for (var i = 0; i < labels.length; i++) labels[i].classList.toggle('active', labels[i].getAttribute('data-track-label') === aState.track);
+    var idx = clipAt(aState.track, aState.p);
+    var clips = timeline.querySelectorAll('.clip');
+    for (var j = 0; j < clips.length; j++) {
+      clips[j].classList.toggle('on', clips[j].getAttribute('data-track') === aState.track && Number(clips[j].getAttribute('data-idx')) === idx);
+    }
+    var key = aState.track + ':' + idx + ':' + aState.cut;
+    if (key !== lastKey) {
+      var c = idx >= 0 ? A[aState.track][idx] : null;
+      document.getElementById('aTrack').textContent = c ? c.track : 'SLUG';
+      document.getElementById('aTitle').textContent = c ? c.title : 'Black slug';
+      document.getElementById('aText').textContent = c ? (aState.cut === 'short' ? c.short : c.long) : 'Nothing on this track here yet.';
+      document.getElementById('aMetric').textContent = c ? c.metric : '—';
+      timeline.setAttribute('aria-valuenow', String(Math.round(aState.p)));
+      timeline.setAttribute('aria-valuetext', c ? c.title : 'Empty');
+      if (lastKey) {
+        aBody.classList.remove('swap'); aMonitor.classList.remove('flash');
+        void aBody.offsetWidth;
+        aBody.classList.add('swap'); aMonitor.classList.add('flash');
+      }
+      lastKey = key;
+    }
+  }
+  function pFromEvent(e) {
+    var lane = timeline.querySelector('.lane').getBoundingClientRect();
+    var p = (e.clientX - lane.left) / lane.width * 100;
+    return Math.max(0, Math.min(99.9, p));
+  }
+  var dragging = false;
+  timeline.addEventListener('pointerdown', function (e) {
+    var clip = e.target.closest ? e.target.closest('.clip') : null;
+    if (clip) aState.track = clip.getAttribute('data-track');
+    else {
+      var laneEl = e.target.closest ? e.target.closest('.lane') : null;
+      if (laneEl) aState.track = laneEl.getAttribute('data-lane');
+    }
+    dragging = true;
+    stopPlay();
+    try { timeline.setPointerCapture(e.pointerId); } catch (err) {}
+    aState.p = pFromEvent(e);
+    renderA();
+  });
+  timeline.addEventListener('pointermove', function (e) { if (!dragging) return; aState.p = pFromEvent(e); renderA(); });
+  timeline.addEventListener('pointerup', function () { dragging = false; });
+  timeline.addEventListener('pointercancel', function () { dragging = false; });
+
+  function step(dir) {
+    var list = A[aState.track];
+    var idx = clipAt(aState.track, aState.p);
+    var target;
+    if (idx === -1) {
+      target = dir > 0 ? list.filter(function (c) { return c.s > aState.p; })[0] : list.filter(function (c) { return c.e <= aState.p; }).pop();
+    } else {
+      target = list[idx + dir];
+    }
+    if (!target) target = dir > 0 ? list[0] : list[list.length - 1];
+    aState.p = target.s + 0.5;
+    renderA();
+  }
+  function stopPlay() { if (aState.playing) { clearInterval(aState.playing); aState.playing = null; } }
+  function play(dir) {
+    stopPlay();
+    if (spice() === 'mild') { step(dir); return; }
+    aState.dir = dir;
+    aState.playing = setInterval(function () { step(aState.dir); }, 1600);
+  }
+  timeline.addEventListener('keydown', function (e) {
+    var k = e.key;
+    var handled = true;
+    if (k === 'ArrowRight') { stopPlay(); step(1); }
+    else if (k === 'ArrowLeft') { stopPlay(); step(-1); }
+    else if (k === 'ArrowUp' || k === 'ArrowDown') {
+      var i = trackOrder.indexOf(aState.track) + (k === 'ArrowUp' ? -1 : 1);
+      aState.track = trackOrder[(i + trackOrder.length) % trackOrder.length];
+      renderA();
+    }
+    else if (k === 'l' || k === 'L') play(1);
+    else if (k === 'j' || k === 'J') play(-1);
+    else if (k === 'k' || k === 'K') stopPlay();
+    else if (k === ' ') { if (aState.playing) stopPlay(); else play(1); }
+    else if (k === 'Home') { stopPlay(); aState.p = 0.5; renderA(); }
+    else if (k === 'End') { stopPlay(); aState.p = 99; renderA(); }
+    else handled = false;
+    if (handled) e.preventDefault();
+  });
+  demoA.addEventListener('click', function (e) {
+    var cutBtn = e.target.closest ? e.target.closest('[data-cut]') : null;
+    if (cutBtn) {
+      aState.cut = cutBtn.getAttribute('data-cut');
+      var cb = demoA.querySelectorAll('[data-cut]');
+      for (var i = 0; i < cb.length; i++) cb[i].setAttribute('aria-pressed', String(cb[i] === cutBtn));
+      renderA();
+    }
+    var rBtn = e.target.closest ? e.target.closest('[data-rating]') : null;
+    if (rBtn && rBtn !== demoA) {
+      var r = rBtn.getAttribute('data-rating');
+      demoA.setAttribute('data-rating', r);
+      var rb = demoA.querySelectorAll('button[data-rating]');
+      for (var j = 0; j < rb.length; j++) rb[j].setAttribute('aria-pressed', String(rb[j] === rBtn));
+      document.getElementById('aRatingLabel').textContent = 'CERTIFIED ' + { u: 'U', ua: 'U/A', a: 'A' }[r];
+    }
+  });
+  window.addEventListener('resize', renderA);
+  renderA();
+  document.getElementById('tab-a').addEventListener('click', function () { requestAnimationFrame(renderA); });
+
+  /* ---------- Demo B: Checkout ---------- */
+  var B = {
+    items: {
+      bopis: 'Pickup in store',
+      ai: 'AI progressive measurements',
+      fidle: 'Fidle.app'
+    },
+    cart: ['bopis']
+  };
+  var bCount = document.getElementById('bCount');
+  var bList = document.getElementById('bCartList');
+  var bDrawer = document.getElementById('bDrawer');
+  var bToggle = document.getElementById('bCartToggle');
+  var bTracking = document.getElementById('bTracking');
+  function renderCart(bump) {
+    bCount.textContent = String(B.cart.length);
+    if (bump) { bCount.classList.remove('bump'); void bCount.offsetWidth; bCount.classList.add('bump'); }
+    bList.innerHTML = '';
+    if (!B.cart.length) {
+      var empty = document.createElement('li');
+      empty.textContent = 'Your cart is empty. Add a project to talk about.';
+      bList.appendChild(empty);
+    }
+    B.cart.forEach(function (id) {
+      var li = document.createElement('li');
+      var name = document.createElement('span'); name.textContent = B.items[id];
+      var note = document.createElement('span'); note.className = 'fine'; note.textContent = 'to discuss';
+      li.appendChild(name); li.appendChild(note);
+      bList.appendChild(li);
+    });
+    var adds = document.querySelectorAll('[data-add]');
+    for (var i = 0; i < adds.length; i++) {
+      var inCart = B.cart.indexOf(adds[i].getAttribute('data-add')) > -1;
+      adds[i].setAttribute('aria-pressed', String(inCart));
+      adds[i].textContent = inCart ? 'In cart ✓' : 'Add to cart';
+    }
+  }
+  document.getElementById('demoB').addEventListener('click', function (e) {
+    var add = e.target.closest ? e.target.closest('[data-add]') : null;
+    if (add) {
+      var id = add.getAttribute('data-add');
+      var at = B.cart.indexOf(id);
+      if (at > -1) B.cart.splice(at, 1); else B.cart.push(id);
+      bTracking.hidden = true;
+      renderCart(true);
+    }
+  });
+  bToggle.addEventListener('click', function () {
+    var open = bDrawer.hidden;
+    bDrawer.hidden = !open;
+    bToggle.setAttribute('aria-expanded', String(open));
+  });
+  document.getElementById('bCheckout').addEventListener('click', function () {
+    if (!B.cart.length) { toast('Add a project first: the cart is the shortlist you want to talk about.'); return; }
+    bDrawer.hidden = true;
+    bToggle.setAttribute('aria-expanded', 'false');
+    bTracking.hidden = false;
+    var steps = bTracking.querySelectorAll('[data-step]');
+    for (var i = 0; i < steps.length; i++) steps[i].classList.remove('done');
+    var delay = spice() === 'mild' ? 0 : 700;
+    for (var j = 0; j < steps.length; j++) {
+      (function (el, n) { setTimeout(function () { el.classList.add('done'); }, delay * n); })(steps[j], j);
+    }
+  });
+  renderCart(false);
+
+  /* ---------- Demo C: Studio Desk ---------- */
+  var C = [
+    { id: '01', title: 'Spectacles', rows: [['Opens', 'AI progressive measurements'], ['Annotation', '15–20 min → 3–5 min for any staff member'], ['Note', 'A measurement is only true for one frame on one face']] },
+    { id: '02', title: 'Order slip', rows: [['Opens', 'Pickup in store (Lenskart)'], ['Annotation', '23 in 100 online orders now picked up in store'], ['Note', 'V1 cost 10% conversion; V2 fixed it with a two-line widget']] },
+    { id: '03', title: 'Film reel', rows: [['Opens', 'About · Season 3'], ['Annotation', 'Edited for Netflix, Prime and Zakir Khan'], ['Note', 'Where the storytelling comes from']] },
+    { id: '04', title: 'Spice tin', rows: [['Opens', 'About · Season 4'], ['Annotation', 'Founded Saoji Spice, a cloud kitchen'], ['Note', 'Also the Spice level control']] },
+    { id: '05', title: 'Phone', rows: [['Opens', 'Concepts'], ['Annotation', 'YouTube × Maps, Swiggy, Noon AI, CRED'], ['Note', 'Clearly labelled as concepts']] },
+    { id: '06', title: 'Sticky notes', rows: [['Opens', 'Lab'], ['Annotation', 'Fidle.app, vibe-coded with Claude Code'], ['Note', 'The builder signal']] }
+  ];
+  var desk = document.getElementById('cDesk');
+  var objs = Array.prototype.slice.call(desk.querySelectorAll('.obj'));
+  var deskLaid = false;
+  function layoutDesk() {
+    if (deskLaid || desk.clientWidth === 0) return;
+    var narrow = desk.clientWidth < 520;
+    var L = narrow
+      ? [[4, 4], [52, 6], [6, 36], [50, 38], [4, 68], [50, 70]]
+      : [[6, 12], [36, 6], [66, 14], [10, 56], [40, 52], [68, 56]];
+    objs.forEach(function (o, i) { o.style.left = L[i][0] + '%'; o.style.top = L[i][1] + '%'; });
+    deskLaid = true;
+  }
+  document.getElementById('tab-c').addEventListener('click', function () { requestAnimationFrame(layoutDesk); });
+  document.getElementById('tab-c').addEventListener('focus', function () { requestAnimationFrame(layoutDesk); });
+  layoutDesk();
+  function openSheet(i) {
+    var o = C[i];
+    document.getElementById('cId').textContent = 'SPEC SHEET · OBJECT ' + o.id;
+    document.getElementById('cTitle').textContent = o.title;
+    var kv = document.getElementById('cKv');
+    kv.innerHTML = '';
+    o.rows.forEach(function (r) {
+      var dt = document.createElement('dt'); dt.textContent = r[0];
+      var dd = document.createElement('dd'); dd.textContent = r[1];
+      kv.appendChild(dt); kv.appendChild(dd);
+    });
+  }
+  var drag = null;
+  objs.forEach(function (el, i) {
+    el.addEventListener('pointerdown', function (e) {
+      if (desk.classList.contains('tidy')) return;
+      var r = el.getBoundingClientRect();
+      drag = { el: el, i: i, dx: e.clientX - r.left, dy: e.clientY - r.top, x0: e.clientX, y0: e.clientY, moved: false };
+      try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    el.addEventListener('pointermove', function (e) {
+      if (!drag || drag.el !== el) return;
+      if (!drag.moved && Math.abs(e.clientX - drag.x0) + Math.abs(e.clientY - drag.y0) < 5) return;
+      drag.moved = true;
+      el.classList.add('dragging');
+      var d = desk.getBoundingClientRect();
+      var w = el.offsetWidth, h = el.offsetHeight;
+      var x = Math.max(0, Math.min(d.width - w, e.clientX - d.left - drag.dx));
+      var y = Math.max(0, Math.min(d.height - h, e.clientY - d.top - drag.dy));
+      el.style.left = (x / d.width * 100) + '%';
+      el.style.top = (y / d.height * 100) + '%';
+    });
+    function end() {
+      if (!drag || drag.el !== el) return;
+      el.classList.remove('dragging');
+      el._suppressClick = drag.moved;
+      drag = null;
+    }
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+    el.addEventListener('click', function () {
+      if (el._suppressClick) { el._suppressClick = false; return; }
+      openSheet(i);
+    });
+    el.addEventListener('keydown', function (e) {
+      if (desk.classList.contains('tidy')) return;
+      var dx = 0, dy = 0;
+      if (e.key === 'ArrowLeft') dx = -2; else if (e.key === 'ArrowRight') dx = 2;
+      else if (e.key === 'ArrowUp') dy = -3; else if (e.key === 'ArrowDown') dy = 3;
+      else return;
+      e.preventDefault();
+      var left = parseFloat(el.style.left) || 0, top = parseFloat(el.style.top) || 0;
+      el.style.left = Math.max(0, Math.min(80, left + dx)) + '%';
+      el.style.top = Math.max(0, Math.min(72, top + dy)) + '%';
+    });
+  });
+  var tidyBtn = document.getElementById('cTidy');
+  tidyBtn.addEventListener('click', function () {
+    var first = objs.map(function (o) { return o.getBoundingClientRect(); });
+    var on = !desk.classList.contains('tidy');
+    desk.classList.toggle('tidy', on);
+    tidyBtn.setAttribute('aria-pressed', String(on));
+    tidyBtn.textContent = on ? 'Mess it up ↦ desk' : 'Tidy up ↦ list';
+    if (spice() === 'mild') return;
+    objs.forEach(function (o, i) {
+      var last = o.getBoundingClientRect();
+      var dx = first[i].left - last.left, dy = first[i].top - last.top;
+      if (!dx && !dy) return;
+      o.style.transition = 'none';
+      o.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          o.style.transition = 'transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1)';
+          o.style.transform = '';
+        });
+      });
+    });
+  });
+})();
+</script>
