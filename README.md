@@ -6,14 +6,20 @@ Research, references and structure for redoing [suhaspaunikar.framer.website](ht
 
 ## Status
 
-- **Direction chosen (2 Nov 2026): Director's Cut.**
-- **The home is the editing app.** The landing screen is a full-screen edit suite: project bin, program monitor, inspector, and a timeline with three tracks (V2 Lab, V1 Work, A1 Life). Hover or focus a clip to preview it; click it to open its page. Testimonials are review notes pinned to the ruler, and *Export · Hire me* opens the contact sheet. On phones it becomes a phone video editor: tap a clip to preview it, then *Watch the cut*.
-- **Wireframes:** https://claude.ai/artifact/5uejqo3LrvrWH5CeczA2Qw (private design canvas). Clickable mid-fidelity wireframes with real copy:
-  - **Desktop pages:** Home (the edit suite), Pickup in store, AI progressive measurements, About ("Previously on…"), Lab, Now, Résumé and a 404.
-  - **Phone:** home (the phone editor), a case study and the menu.
-  - **Shared components:** Navigation and End credits.
-  - **What works in Play:** clips and bin items (hover to preview, click to open), review notes, the Export dialog, nav links, the 30-sec / Director's cut toggle, the U · U/A · A motion certificate, the lab filter, the playable V1/V2 cart, the pupil-marker loupe and the 404 jump-cut puzzle.
-- **Still open:** platform (Framer or code), target market, asset rights and testimonials. See the questions below.
+- **Direction (2 Nov 2026): Director's Cut.**
+- **Platform (2 Nov 2026): code, in this repo.** The site lives in [`site/`](site/): Next.js 16, TypeScript, Tailwind CSS v4 and the shadcn/ui structure. To run it: `cd site && npm install && npm run dev`.
+- **Built so far:** the home page, desktop and phone.
+  - **Desktop:** an edit suite with an assets panel, a program monitor and a timeline that runs by year. The intro comes first, then three layers: companies at the bottom, the work done there in the middle, and experiments from the same period on top.
+  - **Scrubbing:** drag along the years and the monitor cross-dissolves layer by layer. Click a clip to open its page.
+  - **Phone:** the playhead stays fixed in the middle and you swipe the timeline under it.
+  - **Buttons:** Hire me, Play and the main button use the 21st.dev Liquid Metal Button shader, as do the rings that follow the clip under the playhead.
+  - **Other pages** (case studies, Lab, About, Now, Résumé) are placeholders for now.
+- **Wireframes:** https://claude.ai/artifact/5uejqo3LrvrWH5CeczA2Qw (private design canvas). It has the home (desktop and phone, in plastic and liquid-metal versions), both case studies, About, Lab, Now, Résumé, a 404 and the shared components.
+- **Still open:**
+  - real dates for the Lenskart projects and the experiments (marked ≈);
+  - a line on Saoji Spice and the month you're available from;
+  - testimonials, asset rights and target market;
+  - deploying (Vercel is connected to your account).
 
 ---
 
@@ -25,7 +31,7 @@ Research, references and structure for redoing [suhaspaunikar.framer.website](ht
 4. **Recommended concept: "Director's Cut".** Your portfolio *is an edit*. Case studies become rough cut → test screening → re-edit → box office (your BOPIS story already has exactly that shape). The home is the editing app itself: click a clip on the timeline to open that project (on phones, a phone video editor); the footer rolls real credits. Close second: **"Checkout"**, your portfolio as a beautifully designed store, from the person who designed Lenskart's pickup checkout. → [`06-concept-directions.md`](research/06-concept-directions.md)
 5. **Signature ideas that work in any direction:** a **30-second cut / Director's cut** toggle on every case study; a **🌶 Spice level** motion control (Mild = recruiter mode, Saoji = full chaos), which tells your cloud-kitchen story and doubles as accessibility; **playable slices** of your real work (V1 vs V2 cart; align the pupil marker with the loupe); **end-credits footer** with your real collaborators; ⌘K; `llms.txt` for AI screeners. → [`05-interaction-ideas.md`](research/05-interaction-ideas.md)
 6. **Structure:** a one-screen home, the edit suite (title card, proof, the timeline as the project index, review notes, *Export · Hire me*), two "Cut" case studies, lab, about, /now, résumé, colophon, a 404 game. The home regions, wireframes and both case studies are mapped in → [`07-site-structure.md`](research/07-site-structure.md)
-7. **Build:** Framer if you need to launch in ~2 weeks; **code (Astro + GSAP + islands, on Vercel) in this repo** if you can give it 3–5 weeks, which also signals "designer who builds". Budgets: LCP < 2s on mid-range Android, no preloader, reduced-motion by default. → [`08-build-plan.md`](research/08-build-plan.md)
+7. **Build: decided, code in this repo** ([`site/`](site/)). The research suggested Astro; Next.js won because the components you're pulling in (shadcn, 21st.dev) are React, and every page still prerenders as static HTML. Budgets stay the same: LCP < 2s on mid-range Android, no preloader, reduced motion respected. → [`08-build-plan.md`](research/08-build-plan.md)
 
 References with "what to steal" → [`04-references.md`](research/04-references.md) · All sources → [`sources.md`](research/sources.md)
 
@@ -34,7 +40,7 @@ References with "what to steal" → [`04-references.md`](research/04-references.
 ## Questions for you (these decide the next step)
 
 1. ~~**Direction**~~: answered, Director's Cut.
-2. **Platform:** stay on **Framer**, or build in **code in this repo**? (And roughly when do you need it live?)
+2. ~~**Platform**~~: answered, code in this repo ([`site/`](site/)). Still useful to know: roughly when do you need it live?
 3. **Target:** which roles and market? India (Bengaluru?), US, or remote? Commerce, AI products, or both? Your Framer account is set to a New York time zone. Are you based there now?
 4. **Rights and assets:** can you show Lenskart screens and recordings publicly? Do you have any OML editing work you're allowed to show (even 20 seconds)?
 5. **Social proof:** could you get 2–3 short quotes from PMs or engineers you worked with (e.g., Piyush, Vikraman, Rahul, Shivesh)?
@@ -47,6 +53,11 @@ References with "what to steal" → [`04-references.md`](research/04-references.
 
 ```
 README.md                          ← you are here
+site/                              the portfolio in code (Next.js 16 · TypeScript · Tailwind · shadcn)
+  app/                             routes: / (the edit suite), /playground, placeholders for the other pages
+  components/edit-suite/           the home page: monitor, timelines, assets panel, export dialog
+  components/ui/                   the 21st.dev Liquid Metal Button (patched) and the shared liquid-metal module
+  lib/career.ts                    timeline data: companies, work, experiments and dates
 research/
   01-current-site-audit.md         what works / what doesn't today
   02-hiring-insights.md            how reviewers actually read portfolios (2026 data)

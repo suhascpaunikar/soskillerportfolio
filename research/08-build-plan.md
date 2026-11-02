@@ -18,7 +18,11 @@
 
 I lean towards **code (Astro)**: you already vibe-code, this repo exists for it, and "designers who ship working things" is one of the clearest 2026 hiring signals. But it's your call (see the questions in the README).
 
+**Decision (2 Nov 2026): code, in this repo.** See the update at the top of section 2.
+
 ## 2. Suggested stack (code route)
+
+> **Update (2 Nov 2026): what was actually built** (in [`site/`](../site/)). **Next.js 16** (App Router) with React 19, TypeScript, **Tailwind CSS v4** and the **shadcn/ui** structure, instead of Astro. The components being pulled in (shadcn, 21st.dev's Liquid Metal Button) are React, and every route still prerenders as static HTML. Fonts are self-hosted from npm: Hanken Grotesk, Instrument Serif and JetBrains Mono. The liquid-metal shader is `@paper-design/shaders`. Dissolves are CSS transitions; GSAP isn't needed yet. The rest of this table still applies as guidance.
 
 | Layer | Pick | Why |
 |---|---|---|
