@@ -4,6 +4,16 @@ Research, references and structure for redoing [suhaspaunikar.framer.website](ht
 
 **Visual research board:** https://claude.ai/artifact/Mezm3fqLAsq7QQVMtTYsPD (private to you; source in [`research/board/index.html`](research/board/index.html)). It includes playable demos of the three concept directions: scrub the timeline, fill the cart, tidy the desk.
 
+## Status
+
+- **Direction chosen (2 Nov 2026): Director's Cut.**
+- **Wireframes:** https://claude.ai/artifact/5uejqo3LrvrWH5CeczA2Qw (private design canvas). Clickable mid-fidelity wireframes in greyscale with real copy:
+  - **Desktop pages:** Home, Pickup in store, AI progressive measurements, About ("Previously on…"), Lab, Now, Résumé and a 404.
+  - **Phone:** home (reels), a case study and the menu.
+  - **Shared components:** Navigation and End credits.
+  - **What works in Play:** nav links, timeline clips, the 30-sec / Director's cut toggle, the U · U/A · A motion certificate, the lab filter, the playable V1/V2 cart, the pupil-marker loupe and the 404 jump-cut puzzle.
+- **Still open:** platform (Framer or code), target market, asset rights and testimonials. See the questions below.
+
 ---
 
 ## TL;DR
@@ -22,7 +32,7 @@ References with "what to steal" → [`04-references.md`](research/04-references.
 
 ## Questions for you (these decide the next step)
 
-1. **Direction:** does *Director's Cut* (A), *Checkout* (B) or *Studio Desk* (C) feel most like you? Or is there one you'd veto outright?
+1. ~~**Direction**~~: answered, Director's Cut.
 2. **Platform:** stay on **Framer**, or build in **code in this repo**? (And roughly when do you need it live?)
 3. **Target:** which roles and market? India (Bengaluru?), US, or remote? Commerce, AI products, or both? Your Framer account is set to a New York time zone. Are you based there now?
 4. **Rights and assets:** can you show Lenskart screens and recordings publicly? Do you have any OML editing work you're allowed to show (even 20 seconds)?
