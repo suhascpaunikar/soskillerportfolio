@@ -20,6 +20,16 @@ npm run build && npm start
 
 Checks before pushing: `npx tsc --noEmit`, `npm run lint` and `npm run build`.
 
+## Live site (GitHub Pages)
+
+Every push to `main` runs `.github/workflows/pages.yml`, which builds a static export and publishes it to https://suhascpaunikar.github.io/soskillerportfolio/. To try the Pages build locally:
+
+```bash
+PAGES_BASE_PATH=/soskillerportfolio npx next build
+```
+
+The files land in `out/`. Setting `PAGES_BASE_PATH` turns on static export and the repo path prefix, and turns off Cache Components and Partial Prefetching, which static export can't use. Without it, the build is a normal Next.js build (for Vercel or `npm start`).
+
 ## What's here
 
 - `/` is the home page, an edit suite.
