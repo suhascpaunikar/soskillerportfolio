@@ -7,7 +7,7 @@ Written for the recommended **Direction A, "Director's Cut"**. The skeleton is s
 ## 1. Sitemap
 
 ```
-/                         Home: the 10-second pitch + the timeline index
+/                         Home: the edit suite (one screen; every clip opens its page)
 ├── /work/pickup-in-store            Case study (flagship 1)
 ├── /work/ai-progressive-measurements Case study (flagship 2)
 ├── /work/<3rd-project>              Optional: a Ting project, if one is strong enough
@@ -22,73 +22,101 @@ Written for the recommended **Direction A, "Director's Cut"**. The skeleton is s
 └── /sitemap.xml, /og/*.png          SEO + share cards for every page
 ```
 
-**Global elements:** nav (wordmark · Work · Lab · About · ⌘K · motion control · *Copy email*), status pill (availability + local time), end-credits footer, theme ("grade") switcher, skip link.
+**Global elements:** nav (wordmark · Work · Lab · About · Now · Résumé · ⌘K · motion certificate · *Copy email*; on the home it is the editor's header, with *Export · Hire me*), availability and local time (the status bar on the home), an end-credits footer on inside pages, a theme ("grade") switcher and a skip link.
 
 Redirect `/bopis` → `/work/pickup-in-store` and `/progressive-measurements` → `/work/ai-progressive-measurements` so old links keep working. Retire `/old-home`.
 
 ---
 
-## 2. Home: section by section
+## 2. Home: the edit suite
 
-| # | Section | Job | Content |
+*Updated 2 Nov 2026, after the first wireframe review.* The landing screen **is** the editing app. There is no long scrolling home page: the whole pitch fits on one screen, and every clip on the timeline is a door to its page.
+
+| Region | Job | Content | Interaction |
 |---|---|---|---|
-| 1 | **Program monitor (hero)** | Pass the 10-second test | Title card (headline + 1-line positioning) · 2 proof numbers · availability · CTAs: *Watch the 30-sec cut*, *Copy email*, *Résumé* · looping 6s clip |
-| 2 | **Timeline (project index)** | Browse in seconds | V1 = shipped (BOPIS, AI measurements) · V2 = lab (Fidle.app, concepts) · A1 = life story waveform. Drag / J-K-L / ← → / click. Each clip shows title, logline and 1 metric |
-| 3 | **Featured cut** | Depth for skimmers | The BOPIS "box office" strip: 23 in 100 · 2.5× · +20 NPS → *Open the cut* |
-| 4 | **Lab** | Builder signal | Fidle.app as a live embed or GIF, plus 4 concept cards (YouTube × Maps, Swiggy, Noon, CRED) labelled *Concept* |
-| 5 | **Previously on…** | Memorability | A 6-season recap strip (one line each) → *Full story* (/about) |
-| 6 | **Reviews** | Social proof | 2–3 real quotes from PMs and engineers (to collect) |
-| 7 | **Contact** | Convert | "Let's make the next cut." Copy email · book a 20-min call · LinkedIn · availability · city/time zone |
-| 8 | **End credits (footer)** | Delight + warmth | Real collaborators per project roll by; links; colophon; secrets found 0/7; post-credits scene |
+| **Header** | Identity and exits | REC dot · `Suhas Paunikar.prproj` · Work · Lab · About · Now · Résumé · ⌘K · U · U/A · A certificate · **Export · Hire me** | Export opens the contact sheet |
+| **Project bin** (left) | Browse as a list | Three bins: Shipped (2), Lab (5), Seasons (7) | Hover or focus previews; click opens the page |
+| **Program monitor** (centre) | Pass the 10-second test | Default: the title card, *"I used to cut films. Now I cut checkout flows."*, plus the positioning line. Previewing: the clip's track, title, logline, one metric and *Watch the cut →* | Transport: timecode, previous / next clip; *Title card* resets |
+| **Inspector** (right) | Proof at a glance | Default: status (open to roles, from when, where), three proof numbers (23 in 100 · 2.5× · 3–5 min) and specialism. Previewing: track, status, role, team and result | Follows the preview |
+| **Timeline** (bottom) | The project index | V2 · Lab: Fidle.app + 4 concepts · V1 · Work: Pickup in store, AI progressive measurements · A1 · Life: seasons S1–S7 · playhead | Hover or focus previews; click opens: V1 → its case study, V2 → Lab, S1–S6 → About, S7 → Now |
+| **Review notes** (on the ruler) | Social proof, in context | Yellow markers above the work each quote is about: real quotes from PMs and engineers (to collect) | Click shows the note in the monitor and inspector |
+| **Status bar** | Availability | READY · open to roles from {month} · {city} · {local time} · "2 shipped · 5 lab · 7 seasons" | Copy email |
+| **Export · Hire me** (dialog) | Convert | "Export settings": Format = Product designer · Preset = {full-time or contract} · Destination = {city} or remote · Available = from {month} | Copy email · Book a 20-min call · Résumé; Esc closes |
+
+**Where the old home sections went:**
+
+| Was | Now |
+|---|---|
+| Hero | The monitor's title card, shown until someone previews a clip |
+| Timeline index | The timeline itself, which is now the main navigation |
+| Featured cut ("box office" strip) | The Pickup clip's metric in the monitor and its result in the inspector |
+| Lab cards | The V2 track and the Lab bin |
+| "Previously on…" strip | The A1 track and the Seasons bin |
+| Reviews | Review-note markers on the ruler |
+| Contact | The *Export · Hire me* dialog and the status bar |
+| End credits | The foot of every inside page (the home is a single screen) |
 
 ### Desktop wireframe (1440)
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ ● REC  SUHAS PAUNIKAR   00:00:09:14     Work  Lab  About   ⌘K  [U|U/A|A] [Copy email] │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  ┌──────────────── PROGRAM MONITOR (16:9, muted loop) ────────────┐  STATUS     │
-│  │                                                                │  ● Open to  │
-│  │   I used to cut films.                                         │    roles    │
-│  │   Now I cut checkout flows.                                    │  Dec 2026   │
-│  │                                                                │  ─────────  │
-│  │   Product designer · commerce, retail & AI tools · ex-Lenskart │  23 in 100  │
-│  └────────────────────────────────────────────────────────────────┘  orders →   │
-│   [▶ Watch the 30-sec cut]  [Copy email]  [Résumé ↓]                 pickup     │
-├──────────────────────────────────────────────────────────────────────────────┤
-│ V2 LAB   ▕Fidle.app▏ ▕YT×Maps▏ ▕Swiggy▏ ▕Noon AI▏ ▕CRED▏                         │
-│ V1 WORK  ▕████ Pickup in store ████▏▕██████ AI progressive measurements ██████▏ │
-│ A1 LIFE  ~~Event Capital~~Pinstorm~~OML·Netflix·Prime~~Saoji~~Ting~~Lenskart~~▶ │
-│               ▲ playhead (drag · J/K/L · ←/→ · click a clip)                    │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  BOX OFFICE ▸ Pickup in store    23 in 100 │ 2.5× fewer returns │ +20 NPS      │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  PREVIOUSLY ON…  S1 Ops intern ▸ S2 Marketing ▸ S3 Film editor ▸ S4 Founder ▸…  │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  REVIEWS  "…" — PM, Lenskart        "…" — iOS lead, Lenskart                     │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  LET'S MAKE THE NEXT CUT.   [Copy email] [Book 20 min] [LinkedIn]               │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  END CREDITS (rolling) … Piyush Gupta · Vikraman Sridharan · Rahul Rupani …     │
-└──────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+│ ● REC  Suhas Paunikar.prproj   Work Lab About Now Résumé   ⌘K [U|U/A|A]  [Export · Hire me]  │
+├───────────────────┬──────────────────────────────────────────────────┬───────────────────────┤
+│ PROJECT BIN       │ PROGRAM MONITOR · TITLE CARD                     │ INSPECTOR             │
+│                   │                                                  │                       │
+│ ▾ Shipped       2 │                                                  │ STATUS                │
+│   Pickup in store │     I used to cut films.                         │ ● Open to roles       │
+│   AI measurements │     Now I cut checkout flows.                    │   from {month}        │
+│ ▾ Lab           5 │                                                  │ PROOF                 │
+│   Fidle.app       │     Product designer · commerce, retail and      │ 23 in 100 → pickup    │
+│   4 concepts      │     AI tools · ex-Lenskart                       │ 2.5× fewer returns    │
+│ ▾ Seasons       7 │                                                  │ 3–5 min measurement   │
+│   S1 … S7         │ ──────────────────────────────────────────────── │ SPECIALISM            │
+│                   │ 00:00:00:00   |◀  ▶|   [Title card]              │ Checkout · in-store   │
+│                   │ Hover a clip to preview · click to open          │ tools · AI + humans   │
+├───────────────────┴──────────────────────────────────────────────────┴───────────────────────┤
+│ NOTES      ───────────◆──────────────────────────────────────◆──────────────────◆──────────  │
+│ V2 · LAB   ▕  Fidle.app  ▏ ▕ YT × Maps  ▏ ▕   Swiggy    ▏▕   Noon AI   ▏ ▕    CRED    ▏      │
+│ V1 · WORK  ▕████████ Pickup in store ████████▏   ▕████ AI progressive measurements ████▏     │
+│ A1 · LIFE  ▕  S1  ▏▕  S2  ▏▕   S3 OML   ▏▕S4 Saoji▏▕ S5 Ting ▏▕     S6 Lenskart     ▏▕ S7 ▏  │
+│            ▲ playhead     ◆ = review note (a real quote, pinned to the work it is about)     │
+├──────────────────────────────────────────────────────────────────────────────────────────────┤
+│ ● READY · Open from {month} · {city} · {time}   2 shipped · 5 lab · 7 seasons   [Copy email] │
+└──────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Mobile wireframe (390): "Reels"
+### Interaction rules for the home
+
+- **Preview is not navigation.** Hover or keyboard focus previews a clip in the monitor and inspector; a click, tap or Enter opens its page. A short hover delay (around 100 ms) stops the monitor flickering as the cursor crosses the timeline.
+- **Every clip and bin item is a real link**, so the home works with a keyboard, a screen reader and without JavaScript (it then reads as a list of projects under the title card).
+- **Keyboard (in the build):** Tab moves through clips · ← → step between clips · J K L scrub · Space plays the preview loop · Esc returns to the title card or closes Export.
+- **Nothing important hides behind interaction.** The title card, proof numbers and status pass the 10-second test before anyone touches anything. Repeat each review-note quote on the case study it's pinned to.
+- **Motion certificate:** U = no motion (the default when the OS asks to reduce motion), U/A = tasteful, A = everything on.
+- **Narrow screens** (tablet portrait and phones) get the phone editor below.
+
+### Mobile wireframe (390): the phone editor
 
 ```
 ┌───────────────────────┐   ┌───────────────────────┐   ┌───────────────────────┐
-│ ● REC  SUHAS     ⌘ ☰  │   │ V1 · SHIPPED      2/7 │   │ PREVIOUSLY ON…        │
-│                       │   │ [full-bleed clip]     │   │ S3 Film editor        │
-│ I used to cut films.  │   │                       │   │ Netflix · Prime ·     │
-│ Now I cut checkout    │   │ Pickup in store       │   │ Zakir Khan            │
-│ flows.                │   │ 23 in 100 orders →    │   │ S4 Founder            │
-│ PD · commerce · AI    │   │ pickup · 2.5× fewer   │   │ Saoji Spice           │
-│ ● Open to roles       │   │ returns               │   │ …                     │
-│ [▶ 30-sec cut]        │   │ [Watch the cut →]     │   │                       │
-│ [Copy email] [CV]     │   │      swipe ↑          │   │      swipe ↑          │
+│ ● REC Suhas ⋯ [Export]│   │ ● REC Suhas ⋯ [Export]│   │ ● REC Suhas ⋯ [Export]│
+│┌─────────────────────┐│   │┌─────────────────────┐│   │ ░░░░░░░░░░░░░░░░░░░░░ │
+││ TITLE CARD          ││   ││ V1 · SHIPPED        ││   │ ░░░░░░░░░░░░░░░░░░░░░ │
+││ I used to cut films.││   ││ Pickup in store     ││   │ ░░░░░░░░░░░░░░░░░░░░░ │
+││ Now I cut checkout  ││   ││ 23 in 100 → pickup  ││   │ ░░░░░░░░░░░░░░░░░░░░░ │
+││ flows.              ││   ││ · 2.5× fewer returns││   │┌─────────────────────┐│
+││ PD · commerce · AI  ││   ││ [Watch the cut →]   ││   ││ Export settings   × ││
+│└─────────────────────┘│   │└─────────────────────┘│   ││ FORMAT              ││
+│ 00:00:00:00   |◀  ▶|  │   │ 00:00:00:00   |◀  ▶|  │   ││ Product designer    ││
+│ V2 ▕Fidle.app▏▕YT×Ma› │   │ V2 ▕Fidle.app▏▕YT×Ma› │   ││ PRESET              ││
+│ V1 ▕██ Pickup in sto› │   │ V1 ▕▓▓ Pickup in sto› │   ││ [Full-time/contract]││
+│ A1 ▕S1▏▕S2▏▕ S3 OML › │   │ A1 ▕S1▏▕S2▏▕ S3 OML › │   ││ AVAILABLE  {month}  ││
+│ tap to preview · swipe│   │ tap to preview · swipe│   ││ [Copy email]        ││
+│ ● Open to roles {mo}  │   │ ● Open to roles {mo}  │   ││ [Book a 20-min call]││
+│ Work Lab About Now CV │   │ Work Lab About Now CV │   │└─────────────────────┘│
 └───────────────────────┘   └───────────────────────┘   └───────────────────────┘
+ 1 · Landing                 2 · Tap a clip              3 · Export
 ```
-Full-height snap sections with **vertical** swipe (native scroll + CSS scroll-snap, not hijacked), a bottom thumb-zone CTA bar, and the motion control in the menu.
+A phone video editor: monitor on top, a timeline that scrolls sideways (native horizontal scroll; vertical page scroll is never hijacked) and tools in thumb reach at the bottom. With no hover on touch, a **tap previews** a clip and *Watch the cut →* opens it. *Export* opens a bottom sheet; ⋯ opens the menu with the motion certificate. Inside pages are normal vertical pages; case studies keep the 30-sec cut on top and fold the chapters into a list.
 
 ---
 

@@ -135,4 +135,6 @@ Weights follow your brief ("fun, engaging, stand out immediately"): uniqueness �
 
 **Recommendation: A, "Director's Cut".** It's the most *only-you* idea, it turns your case studies into a story structure that's *easier* to follow (rough cut → test screening → re-edit → box office), it suits your love of visual effects, and it works on mobile as reels. **B is a close second.** If you weight clarity and speed-to-launch over uniqueness, B wins, and it's the sharper choice if you're targeting commerce roles specifically. **C** is the most playful but the riskiest and slowest. Keep it as a mini-game or an About-page moment rather than the whole site.
 
+**Update (2 Nov 2026):** A was chosen. In the wireframes the home became the editing app itself (one screen, where every clip opens its page), and on phones a phone video editor replaced reels. See [`07-site-structure.md`](07-site-structure.md).
+
 > Whatever you pick, **don't mix metaphors** across the site. Borrow *mechanics* freely (the shortlist cart, the spice knob, the desk "tidy up"), but re-skin them in the chosen language.

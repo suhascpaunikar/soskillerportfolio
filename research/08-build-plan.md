@@ -39,9 +39,9 @@ I lean towards **code (Astro)**: you already vibe-code, this repo exists for it,
 ## 3. Component inventory (build list)
 
 **Global:** Nav · Status pill · Motion control (CBFC U / U/A / A *or* spice level) · Grade (theme) switcher · ⌘K palette · Copy-email button + toast · Credits footer · Easter-egg manager (tracks found secrets) · Skip link.
-**Home:** Program monitor (video + title card) · Timeline (tracks, clips, playhead, keyboard) · Box-office strip · Lab cards · "Previously on" strip · Reviews · Contact block.
+**Home (the edit suite, one screen):** Editor header with *Export · Hire me* · Project bin · Program monitor (title card, clip preview, review note) · Transport · Inspector · Timeline (ruler with review-note markers, tracks, clips as links, playhead, keyboard) · Status bar · Export dialog.
 **Case study:** Title card · Cut toggle · 30-sec cut block · Chapter (with sticky mini-timeline) · Metric tile · Before/after scrubber · Playable slice container · Deleted-scenes gallery · Commentary audio player · Credits · Next feature.
-**Mobile:** Reels container (scroll-snap) · Bottom CTA bar.
+**Mobile:** Phone editor (monitor, sideways-scrolling timeline, tap to preview, *Watch the cut* button) · Bottom nav · Export bottom sheet.
 
 ## 4. Budgets (non-negotiable)
 
@@ -64,7 +64,7 @@ I lean towards **code (Astro)**: you already vibe-code, this repo exists for it,
 | 0 | **Decide**: direction (A/B/C), Framer vs code, target roles and market | Answers to the README questions |
 | 1 | **Content first**: rewrite both case studies into "The Cut"; 30-sec cuts; hero copy; About seasons; ask for 3 testimonials | Final copy in Markdown/MDX |
 | 2 | **Design system**: type, colour tokens and grades, grain, motion tokens, components; hi-fi of home + case study (desktop + mobile) | Figma or Framer canvas |
-| 3 | **Build the skeleton**: home, case-study template, lab, about, contact, mobile reels; deploy previews | Working site, no frills |
+| 3 | **Build the skeleton**: the edit-suite home (desktop and phone editor), case-study template, lab, about, now, résumé; deploy previews | Working site, no frills |
 | 4 | **Signature layer**: timeline scrubber, motion control, 2 playable slices, credits footer, ⌘K, 3 easter eggs | The "wow" |
 | 5 | **Harden and launch**: performance and a11y pass, OG/meta/`llms.txt`, redirects, analytics, custom domain; then test (below) and launch | Live site |
 
