@@ -9,7 +9,7 @@ Research, references and structure for redoing [suhaspaunikar.framer.website](ht
 - **Direction (2 Nov 2026): Director's Cut.**
 - **Platform (2 Nov 2026): code, in this repo.** The site lives in [`site/`](site/): Next.js 16, TypeScript, Tailwind CSS v4 and the shadcn/ui structure. To run it: `cd site && npm install && npm run dev`.
 - **Built so far:** the home page, desktop and phone.
-  - **Desktop:** an edit suite with an assets panel, a program monitor and a timeline that runs by year. The intro comes first, then three layers: companies at the bottom, the work done there in the middle, and experiments from the same period on top.
+  - **Desktop:** an edit suite in the style of the Diffusion Studio editor: a program monitor and a timeline that runs by year. The intro comes first, then three layers: companies at the bottom, the work done there in the middle, and experiments from the same period on top.
   - **Scrubbing:** drag along the years and the monitor cross-dissolves layer by layer. Click a clip to open its page.
   - **Phone:** the playhead stays fixed in the middle and you swipe the timeline under it.
   - **Buttons:** Hire me, Play and the main button use the 21st.dev Liquid Metal Button shader, as do the rings that follow the clip under the playhead.
@@ -55,7 +55,7 @@ References with "what to steal" → [`04-references.md`](research/04-references.
 README.md                          ← you are here
 site/                              the portfolio in code (Next.js 16 · TypeScript · Tailwind · shadcn)
   app/                             routes: / (the edit suite), /playground, placeholders for the other pages
-  components/edit-suite/           the home page: monitor, timelines, assets panel, export dialog
+  components/edit-suite/           the home page: monitor, timelines, export dialog
   components/ui/                   the 21st.dev Liquid Metal Button (patched) and the shared liquid-metal module
   lib/career.ts                    timeline data: companies, work, experiments and dates
 research/

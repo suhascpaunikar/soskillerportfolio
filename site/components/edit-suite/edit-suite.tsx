@@ -9,7 +9,6 @@ import { DesktopSuite } from "./desktop-suite";
 import { ExportDialog } from "./export-dialog";
 import { PhoneSuite } from "./phone-suite";
 
-export type Rating = "u" | "ua" | "a";
 export type LayerKey = "exp" | "work" | "co";
 export type Layers = Record<LayerKey, boolean>;
 
@@ -18,8 +17,7 @@ export interface Suite {
   frame: Frame;
   /** True while the reel plays. */
   running: boolean;
-  rating: Rating;
-  /** Cross-dissolve length in ms; 0 means hard cuts. */
+  /** Cross-dissolve length in ms; 0 (hard cuts) when the visitor prefers reduced motion. */
   fade: number;
   hidden: Layers;
   copied: boolean;
@@ -31,7 +29,6 @@ export interface Suite {
   togglePlay: () => void;
   prev: () => void;
   next: () => void;
-  setRating: (rating: Rating) => void;
   toggleLayer: (key: LayerKey) => void;
   copyEmail: () => void;
   openExport: () => void;
@@ -44,14 +41,12 @@ export function EditSuite() {
   const isDesktop = useMediaQuery("(min-width: 1024px)", null);
   const [pos, setPos] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [ratingChoice, setRatingChoice] = useState<Rating | null>(null);
   const [hidden, setHidden] = useState<Layers>({ exp: false, work: false, co: false });
   const [copied, setCopied] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
   const running = playing && pos < TOTAL;
-  const rating: Rating = ratingChoice ?? (reduced ? "u" : "ua");
-  const fade = rating === "u" ? 0 : rating === "a" ? 900 : 500;
+  const fade = reduced ? 0 : 500;
 
   useEffect(() => {
     if (!running) return;
@@ -91,7 +86,6 @@ export function EditSuite() {
     pos,
     frame: frameAt(pos),
     running,
-    rating,
     fade,
     hidden,
     copied,
@@ -101,7 +95,6 @@ export function EditSuite() {
     togglePlay,
     prev: () => jump(prevStart(pos)),
     next: () => jump(nextStart(pos)),
-    setRating: setRatingChoice,
     toggleLayer: (key) => setHidden((h) => ({ ...h, [key]: !h[key] })),
     copyEmail,
     openExport: () => setExportOpen(true),

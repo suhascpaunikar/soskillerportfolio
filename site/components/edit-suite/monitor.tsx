@@ -5,8 +5,10 @@ import type { CSSProperties } from "react";
 import { EMAIL, YEARS, companies, companyName, dateAt, experiments, rangeOf, work } from "@/lib/career";
 import { cn } from "@/lib/utils";
 
-import { MetalButton } from "@/components/ui/liquid-metal";
+import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/ds-icon";
 
+import { CaseStudyBadge } from "./clip-label";
 import type { Suite } from "./edit-suite";
 
 /** Each layer is a stack of frames; switching frames cross-dissolves them. */
@@ -34,7 +36,7 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
             key={year}
             aria-hidden="true"
             className={cn(
-              "absolute font-sans font-bold leading-none tracking-[-0.05em] text-[#141418]",
+              "absolute font-sans font-bold leading-none tracking-[-0.05em] text-[#141414]",
               phone ? "-bottom-3 right-2.5 text-[112px]" : "-bottom-4 right-[22px] text-[150px]",
             )}
             style={fx(frame.year === year, fade)}
@@ -54,20 +56,23 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
             key={w.id}
             className={cn(
               "absolute inset-0 flex box-border",
-              phone ? "flex-col gap-2.5 px-4 pb-[84px] pt-[62px]" : "gap-7 px-9 pb-[92px] pt-[34px]",
+              phone ? "flex-col gap-2.5 px-4 pb-[84px] pt-[50px]" : "gap-7 px-9 pb-[92px] pt-[34px]",
             )}
             style={fx(showWork && frame.work?.id === w.id, fade)}
           >
             <div className={cn("flex min-w-0 flex-col", phone ? "gap-2.5" : "flex-[1_1_56%] gap-3")}>
-              <p className={cn("m-0 font-mono font-semibold tracking-[0.06em] text-work-ink", phone ? "text-[10px] leading-[1.35]" : "text-[11px] leading-[1.3]")}>
-                WORK · {companyName(w.company).toUpperCase()} · {rangeOf(w)}
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                {w.caseStudy && <CaseStudyBadge />}
+                <p className={cn("m-0 font-mono font-semibold tracking-[0.06em] text-work-ink", phone ? "text-[10px] leading-[1.35]" : "text-[11px] leading-[1.3]")}>
+                  WORK · {companyName(w.company).toUpperCase()} · {rangeOf(w)}
+                </p>
+              </div>
               <h2 className={cn("m-0 font-serif font-normal text-white", phone ? "text-[32px] leading-[1.05]" : "text-[40px] leading-[1.05]")}>{w.title}</h2>
               <p className={cn("m-0 text-soft", phone ? "text-sm leading-[1.45]" : "max-w-[44ch] text-[15px] leading-normal")}>{w.line}</p>
               {w.chips.length > 0 && (
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {w.chips.map((chip) => (
-                    <span key={chip} className={cn("rounded-full border border-[#3f4790] font-mono text-[#e1e4ff]", phone ? "px-[9px] py-[5px] text-[11px]" : "px-2.5 py-1.5 text-xs")}>
+                    <span key={chip} className={cn("rounded-full border border-work/40 font-mono text-work-ink", phone ? "px-[9px] py-[5px] text-[11px]" : "px-2.5 py-1.5 text-xs")}>
                       {chip}
                     </span>
                   ))}
@@ -76,7 +81,7 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
             </div>
             <div
               className={cn(
-                "box-border flex items-center justify-center rounded-[10px] border border-dashed border-[#3a3a44] text-center font-mono text-dim",
+                "box-border flex items-center justify-center rounded-lg border border-dashed border-border-input text-center font-mono text-dim",
                 phone ? "min-h-12 flex-1 p-2.5 text-[10px] leading-normal" : "flex-[0_0_32%] p-4 text-[11px] leading-normal",
               )}
               style={{ background: "repeating-linear-gradient(135deg, rgba(255,255,255,0.035) 0 10px, rgba(255,255,255,0) 10px 20px)" }}
@@ -96,7 +101,7 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
           <div
             key={c.id}
             className={cn(
-              "absolute box-border flex items-center rounded-lg border border-[#2b2b31] bg-[rgba(12,12,14,0.92)]",
+              "absolute box-border flex items-center rounded-lg border border-border-input bg-[rgba(12,12,12,0.92)]",
               phone ? "bottom-3 left-3 max-w-[calc(100%-24px)] gap-2.5 py-[9px] pl-2.5 pr-3" : "bottom-6 left-7 max-w-[calc(100%-56px)] gap-3 py-2.5 pl-3 pr-4",
             )}
             style={fx(showCompany && frame.company?.id === c.id, fade)}
@@ -111,20 +116,31 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
           </div>
         ))}
 
-        {experiments.map((x) => (
-          <div
-            key={x.id}
-            className={cn(
-              "absolute box-border rounded-[10px] border border-exp bg-[#18121f] shadow-[0_10px_28px_rgba(0,0,0,0.5)]",
-              phone ? "right-2.5 top-2.5 w-[58%] px-[11px] py-[9px]" : "right-[18px] top-[18px] w-[232px] px-3.5 py-3",
-            )}
-            style={fx(showExperiment && frame.experiment?.id === x.id, fade)}
-          >
-            <p className={cn("m-0 mb-1.5 font-mono font-semibold tracking-[0.08em] text-exp-ink", phone ? "text-[9px]" : "text-[10px]")}>EXPERIMENT · {x.when}</p>
-            <p className={cn("m-0 font-semibold leading-tight text-white", phone ? "text-[13px]" : "mb-1 text-[15px]")}>{x.title}</p>
-            {!phone && <p className="m-0 text-xs leading-[1.45] text-soft">{x.line}</p>}
-          </div>
-        ))}
+        {experiments.map((x) =>
+          phone ? (
+            <div
+              key={x.id}
+              className="absolute right-2.5 top-2.5 box-border flex max-w-[62%] items-center gap-1.5 rounded-md border border-exp/60 bg-[#17122a] px-2 py-1.5"
+              style={fx(showExperiment && frame.experiment?.id === x.id, fade)}
+            >
+              <span aria-hidden="true" className="size-2 shrink-0 rounded-[2px] bg-exp" />
+              <span className="truncate text-xs font-semibold leading-none text-white">
+                <span className="sr-only">Experiment: </span>
+                {x.title}
+              </span>
+            </div>
+          ) : (
+            <div
+              key={x.id}
+              className="absolute right-[18px] top-[18px] box-border w-[232px] rounded-lg border border-exp/60 bg-[#17122a] px-3.5 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.5)]"
+              style={fx(showExperiment && frame.experiment?.id === x.id, fade)}
+            >
+              <p className="m-0 mb-1.5 font-mono text-[10px] font-semibold tracking-[0.08em] text-exp-ink">EXPERIMENT · {x.when}</p>
+              <p className="m-0 mb-1 text-[15px] font-semibold leading-tight text-white">{x.title}</p>
+              <p className="m-0 text-xs leading-[1.45] text-soft">{x.line}</p>
+            </div>
+          ),
+        )}
 
         <div
           className={cn("absolute inset-0 box-border flex flex-col justify-center bg-screen", phone ? "gap-[18px] px-[22px] py-7" : "gap-[22px] px-[52px] py-10")}
@@ -147,9 +163,10 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
             >
               {EMAIL}
             </a>
-            <MetalButton onClick={suite.copyEmail} innerClassName="h-9 px-4 text-xs">
+            <Button variant="secondary" size="lg" onClick={suite.copyEmail}>
+              <Icon name="copy" className="-ml-1 size-5" />
               {suite.copied ? "Copied" : "Copy email"}
-            </MetalButton>
+            </Button>
           </div>
         </div>
       </div>

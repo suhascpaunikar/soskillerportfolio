@@ -27,7 +27,7 @@ export interface Span {
   approx?: boolean;
 }
 
-export type CompanyId = "oml" | "saoji" | "ting" | "lenskart" | "freelance";
+export type CompanyId = "oml" | "saoji" | "ting" | "tenk" | "lenskart" | "freelance";
 
 export interface Company extends Span {
   id: CompanyId;
@@ -36,13 +36,19 @@ export interface Company extends Span {
   role: string;
   dates: string;
   href: string;
+  /** Second line on the timeline clip. */
+  sub?: string;
+  /** Highlighted on the timeline: the company the case studies come from. */
+  focus?: boolean;
 }
 
 export interface WorkItem extends Span {
   id: string;
   company: CompanyId;
+  /** Small caps line above the clip label, e.g. "Clients". */
+  eyebrow?: string;
   /** Label on the timeline clip. */
-  short: string;
+  label: string;
   title: string;
   line: string;
   chips: string[];
@@ -50,6 +56,8 @@ export interface WorkItem extends Span {
   media: string;
   href?: string;
   cta?: string;
+  /** A finished case study: the clip is highlighted and tagged "Case study". */
+  caseStudy?: boolean;
 }
 
 export interface Experiment extends Span {
@@ -58,23 +66,24 @@ export interface Experiment extends Span {
   title: string;
   line: string;
   when: string;
-  row: 0 | 1;
   href: string;
 }
 
 export const companies: Company[] = [
-  { id: "oml", name: "OML", folder: "OML", role: "Freelance video editor", dates: "Apr 2019 – Mar 2021", s: at(2019, 4), e: at(2021, 4), href: "/about" },
+  { id: "oml", name: "OML", folder: "OML", role: "Freelance video editor", dates: "Apr 2019 – Mar 2021", s: at(2019, 4), e: at(2021, 4), href: "/about", sub: "Freelance video editor" },
   { id: "saoji", name: "Saoji Spice", folder: "SAOJI_SPICE", role: "Founder, cloud kitchen", dates: "2021 – 2022", s: at(2021, 4), e: at(2022, 3), approx: true, href: "/about" },
-  { id: "ting", name: "Ting", folder: "TING", role: "UX intern → Junior UX Associate → Freelance", dates: "Mar 2022 – Nov 2023", s: at(2022, 3), e: at(2023, 12), href: "/about" },
-  { id: "lenskart", name: "Lenskart", folder: "LENSKART", role: "Product Designer", dates: "Feb 2024 – Mar 2026", s: at(2024, 2), e: at(2026, 3), href: "/about" },
-  { id: "freelance", name: "Freelance", folder: "FREELANCE", role: "Product Designer", dates: "Mar 2026 – now", s: at(2026, 3), e: TOTAL, href: "/now" },
+  { id: "ting", name: "Ting", folder: "TING", role: "UX Designer", dates: "Mar 2022 – Mar 2023", s: at(2022, 3), e: at(2023, 4), approx: true, href: "/about", sub: "UX Designer" },
+  { id: "tenk", name: "10k Designers", folder: "10K_DESIGNERS", role: "Cohort 8", dates: "Apr 2023 – Jan 2024", s: at(2023, 4), e: at(2024, 2), approx: true, href: "/about", sub: "Cohort 8" },
+  { id: "lenskart", name: "Lenskart", folder: "LENSKART", role: "Product Designer", dates: "Feb 2024 – Mar 2026", s: at(2024, 2), e: at(2026, 3), href: "/about", sub: "Product Designer", focus: true },
+  { id: "freelance", name: "Freelance", folder: "FREELANCE", role: "Product Designer", dates: "Mar 2026 – now", s: at(2026, 3), e: TOTAL, href: "/now", sub: "Product Designer" },
 ];
 
 export const work: WorkItem[] = [
   {
     id: "campaigns",
     company: "oml",
-    short: "Campaign edits · Netflix, Prime, Tinder, HDFC Life",
+    eyebrow: "Campaign edits for",
+    label: "Netflix, Prime, Tinder, HDFC Life",
     title: "Campaign edits",
     line: "Digital campaigns for Netflix, Amazon Prime, Tinder and HDFC Life, cut with cross-functional teams, plus videos with creators including Zakir Khan and Biswa Kalyan Rath.",
     chips: [],
@@ -87,8 +96,9 @@ export const work: WorkItem[] = [
   {
     id: "kitchen",
     company: "saoji",
-    short: "Founded a cloud kitchen",
-    title: "Founded a cloud kitchen",
+    eyebrow: "Started",
+    label: "Cloud Kitchen",
+    title: "Started a cloud kitchen",
     line: "[One line on what you built at Saoji Spice and what running it taught you]",
     chips: [],
     media: "[A photo from the kitchen]",
@@ -101,20 +111,22 @@ export const work: WorkItem[] = [
   {
     id: "websites",
     company: "ting",
-    short: "Websites · LA Times, Vedanta, Dabur UK, Prowise",
+    eyebrow: "Clients",
+    label: "LA Times, Vedanta, Dabur UK, Prowise",
     title: "Websites for LA Times, Vedanta, Dabur UK and Prowise",
     line: "Worked with senior designers on major projects and owned smaller ones end to end: user flows and interfaces for e-commerce and corporate websites.",
     chips: [],
     media: "[Screens from one of the sites]",
     s: at(2022, 3),
-    e: at(2023, 12),
+    e: at(2023, 4),
+    approx: true,
     href: "/about",
     cta: "Read the backstory",
   },
   {
     id: "pickup",
     company: "lenskart",
-    short: "Pickup in store",
+    label: "Pickup in store",
     title: "Pickup in store",
     line: "Buy online, pick up in store. The first version cost conversions; the second shrank the choice to two lines on the cart.",
     chips: ["23% of online orders", "2.5× fewer returns"],
@@ -123,12 +135,13 @@ export const work: WorkItem[] = [
     e: at(2024, 8),
     approx: true,
     href: "/work/pickup-in-store",
-    cta: "Watch the cut",
+    cta: "Read the case study",
+    caseStudy: true,
   },
   {
     id: "ai",
     company: "lenskart",
-    short: "AI progressive measurements",
+    label: "AI progressive measurements",
     title: "AI progressive measurements",
     line: "Sole designer of an iPad flow that lets any store staff member take progressive-lens measurements.",
     chips: ["70% faster", "15–20 min → 3–5 min", "Live nationwide"],
@@ -137,12 +150,13 @@ export const work: WorkItem[] = [
     e: at(2025, 4),
     approx: true,
     href: "/work/ai-progressive-measurements",
-    cta: "Watch the cut",
+    cta: "Read the case study",
+    caseStudy: true,
   },
   {
     id: "cashback",
     company: "lenskart",
-    short: "Claim Cashback",
+    label: "Claim Cashback",
     title: "Claim Cashback",
     line: "Owned the design of Claim Cashback: rewards that are easier to find, and faster app adoption through redemption online and in store.",
     chips: [],
@@ -154,7 +168,7 @@ export const work: WorkItem[] = [
   {
     id: "pos",
     company: "lenskart",
-    short: "Handheld POS",
+    label: "Handheld POS",
     title: "Handheld POS for store staff",
     line: "Owned the end-to-end design of a handheld point-of-sale for store staff.",
     chips: [],
@@ -166,9 +180,10 @@ export const work: WorkItem[] = [
   {
     id: "now",
     company: "freelance",
-    short: "Freelance product design",
+    eyebrow: "Clients",
+    label: "Balter, Rainbow Hospitals",
     title: "Freelance product design",
-    line: "Freelancing since March 2026, and open to the next full-time team from [MONTH].",
+    line: "Freelancing since March 2026, with clients including Balter and Rainbow Hospitals. Open to the next full-time team from [MONTH].",
     chips: [],
     media: "[Current project, or a photo of your desk]",
     s: at(2026, 3),
@@ -178,12 +193,13 @@ export const work: WorkItem[] = [
   },
 ];
 
+/** Side projects. All of them are highlighted on the timeline. */
 export const experiments: Experiment[] = [
-  { id: "yt", short: "YT × Maps", title: "YouTube × Google Maps", line: "Liked a place while watching a video? Save it straight to Google Maps.", when: "≈ EARLY 2023", s: at(2023, 1), e: at(2023, 7), row: 0, approx: true, href: "/lab" },
-  { id: "swiggy", short: "Swiggy", title: "Swiggy Ad Discount", line: "Watch a short ad, answer a question, get a discount on your order.", when: "≈ MID 2023", s: at(2023, 3), e: at(2023, 8), row: 1, approx: true, href: "/lab" },
-  { id: "noon", short: "Noon AI", title: "Noon AI Search", line: "Type what you need, and AI builds your shopping list.", when: "≈ LATE 2023", s: at(2023, 7), e: at(2023, 12), row: 0, approx: true, href: "/lab" },
-  { id: "cred", short: "CRED", title: "CRED Milestones", line: "Track every credit card milestone and redeem them in one place.", when: "≈ LATE 2023", s: at(2023, 8), e: at(2023, 12), row: 1, approx: true, href: "/lab" },
-  { id: "fidle", short: "Fidle.app", title: "Fidle.app", line: "A visual-effects playground, vibe-coded with Claude Code. Copy, embed and go in Framer.", when: "≈ 2025–26", s: at(2025, 10), e: at(2026, 5), row: 0, approx: true, href: "/lab" },
+  { id: "swiggy", short: "Swiggy", title: "Swiggy Ad Discount", line: "Watch a short ad, answer a question, get a discount on your order.", when: "≈ MID 2023", s: at(2023, 4), e: at(2023, 9), approx: true, href: "/lab" },
+  { id: "cred", short: "CRED", title: "CRED Milestones", line: "Track every credit card milestone and redeem them in one place.", when: "≈ LATE 2023", s: at(2023, 10), e: at(2024, 2), approx: true, href: "/lab" },
+  { id: "yt", short: "YT × Maps", title: "YouTube × Google Maps", line: "Liked a place while watching a video? Save it straight to Google Maps.", when: "≈ MID 2024", s: at(2024, 5), e: at(2024, 11), approx: true, href: "/lab" },
+  { id: "noon", short: "Noon AI", title: "Noon AI Search", line: "Type what you need, and AI builds your shopping list.", when: "≈ MID 2025", s: at(2025, 3), e: at(2025, 8), approx: true, href: "/lab" },
+  { id: "fidle", short: "Fidle.app", title: "Fidle.app", line: "A visual-effects playground, vibe-coded with Claude Code. Copy, embed and go in Framer.", when: "≈ 2026", s: at(2026, 3), e: at(2026, 10), approx: true, href: "/lab" },
 ];
 
 export const EMAIL = "paunikarsuhas@gmail.com";
@@ -220,7 +236,6 @@ export function frameAt(pos: number): Frame {
     year: START_YEAR + Math.floor((Math.min(pos, TOTAL - 1) - INTRO) / 12),
     company: companies.find((c) => isLive(c, pos)) ?? null,
     work: work.find((w) => isLive(w, pos)) ?? null,
-    // When two experiments overlap, show the one that started most recently.
     experiment: live.length ? live.reduce((a, b) => (b.s > a.s ? b : a)) : null,
   };
 }
