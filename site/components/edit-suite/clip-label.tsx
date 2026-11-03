@@ -1,11 +1,11 @@
 import { cn } from "@/lib/utils";
 
-/** The "Case study" tag: Diffusion Studio's default badge (primary blue, small radius), shrunk to fit a clip. */
+/** The "Case study" tag: a small white label that stands out on the blue work clips. */
 export function CaseStudyBadge({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex h-[14px] w-fit max-w-full shrink-0 items-center overflow-hidden whitespace-nowrap rounded-[3px] bg-primary px-1 text-[8.5px] font-semibold uppercase leading-none tracking-[0.06em] text-white",
+        "inline-flex h-[15px] w-fit max-w-full shrink-0 items-center overflow-hidden whitespace-nowrap rounded-[4px] bg-white px-1.5 font-mono text-[8.5px] font-bold uppercase leading-none tracking-[0.06em] text-[#1b2170] [text-shadow:none]",
         className,
       )}
     >
@@ -16,18 +16,18 @@ export function CaseStudyBadge({ className }: { className?: string }) {
 
 /**
  * The text inside a clip: an optional small-caps line (or the case-study tag) above the label,
- * or the label with a second line under it (company role). Inter 11px, inset 6px, as in Diffusion Studio.
+ * or the label with a second line under it (company role).
  */
 export function ClipLabel({ eyebrow, label, sub, caseStudy = false }: { eyebrow?: string; label: string; sub?: string; caseStudy?: boolean }) {
   return (
-    <span className="relative flex min-w-0 flex-col justify-center gap-[3px] px-1.5">
+    <span className="relative flex min-w-0 flex-col justify-center gap-[3px] px-[9px]">
       {caseStudy ? (
         <CaseStudyBadge />
       ) : (
-        eyebrow && <span className="truncate text-[8.5px] font-semibold uppercase leading-none tracking-[0.06em] opacity-75">{eyebrow}</span>
+        eyebrow && <span className="truncate text-[9px] font-semibold uppercase leading-none tracking-[0.05em] opacity-80">{eyebrow}</span>
       )}
-      <span className="truncate text-[11px] font-semibold leading-[1.15]">{label}</span>
-      {sub && <span className="truncate text-[11px] leading-[1.15] opacity-75">{sub}</span>}
+      <span className="truncate text-[11px] font-semibold leading-[1.2]">{label}</span>
+      {sub && <span className="truncate text-[11px] font-medium leading-[1.2] opacity-80">{sub}</span>}
     </span>
   );
 }

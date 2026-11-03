@@ -1,64 +1,49 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-/*
- * Timeline styling ported from the Diffusion Studio editor's timeline engine
- * (https://github.com/diffusionstudio/editor, apps/web/src/engine/timeline:
- * config.ts, constants.ts, paths.ts). Their timeline draws on a canvas; these are
- * the same sizes, colours and shapes for the DOM timeline here.
- */
-
 import type { CSSProperties } from "react";
 
 import { INTRO, SPAN_MONTHS, YEARS, at, monthLabel } from "@/lib/career";
 
-/** Diffusion Studio: RULER_HEIGHT, RULER_TICK_HEIGHT_MAJOR / MINOR, CLIP_CORNER_RADIUS, DEFAULT_CLIP_HEIGHT. */
-export const RULER_HEIGHT = 36;
-export const TICK_MAJOR = 9;
-export const TICK_MINOR = 3;
-export const CLIP_RADIUS = 4;
-export const CLIP_HEIGHT = 40;
+/** A still chrome rim around each clip (a static gradient, not the liquid-metal shader). */
+const RIM =
+  "conic-gradient(from 210deg at 50% 50%, #f4f4f6 0deg, #77777f 45deg, #e8e8ee 95deg, #2c2c32 150deg, #ffe1e1 185deg, #c9d3ff 215deg, #3a3a42 265deg, #ededf2 320deg, #f4f4f6 360deg)";
 
-/** The playhead knob that sits in the ruler (Diffusion Studio's KNOB_PATH, 10×13). */
-export const KNOB_PATH =
-  "M6.47987 12.372C5.68637 13.2449 4.31359 13.2449 3.52004 12.372L0.520121 9.07213C0.185444 8.70399 0 8.22432 0 7.72679L0 2C0 0.89543 0.895431 0 2 0L7.99987 0C9.10449 0 9.99994 0.895511 9.99987 2.00013L9.99949 7.72692C9.99946 8.22437 9.81405 8.70396 9.47945 9.07206L6.47987 12.372Z";
+const body = (top: string, bottom: string) => `linear-gradient(180deg, ${top} 0%, ${bottom} 100%) padding-box, ${RIM} border-box`;
 
 export type Layer = "exp" | "work" | "co";
 
-/** Clip fill, highlighted fill and label colour per layer, from Diffusion Studio's COLORS.clip. */
 const LAYER = {
-  exp: { fill: "var(--color-exp-clip)", focus: "var(--color-exp-focus)", ink: "var(--color-exp-ink)", wave: "#b9a3ff" },
-  work: { fill: "var(--color-work-clip)", focus: "var(--color-work-focus)", ink: "var(--color-work-ink)", wave: "#70a7ff" },
-  co: { fill: "var(--color-co-clip)", focus: "var(--color-co-focus)", ink: "var(--color-co-ink)", wave: "#0dbf8a" },
+  exp: { fill: body("#7b45d9", "#4a1f96"), focus: body("#9a66ff", "#5a2cbc"), glow: "rgba(154,102,255,0.5)" },
+  work: { fill: body("#4954c8", "#252e84"), focus: body("#6b78f5", "#3442b4"), glow: "rgba(107,120,245,0.5)" },
+  co: { fill: body("#25905d", "#125235"), focus: body("#36b878", "#18704a"), glow: "rgba(54,184,120,0.45)" },
 } as const;
 
-export const waveColor = (layer: Layer) => LAYER[layer].wave;
+export const CLIP_SHADOW = "inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 6px rgba(0,0,0,0.5)";
+
+/** Classes every clip shares: the rim border, white label text with a soft shadow, and a focus ring. */
+export const CLIP_CLASS =
+  "clip absolute box-border flex items-center overflow-hidden border-[1.5px] border-transparent text-left text-white no-underline [text-shadow:0_1px_1px_rgba(0,0,0,0.55)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-playhead";
 
 /**
- * A clip's colours. A highlighted clip (a case study, its company, or an experiment)
- * gets a brighter fill and a light inner edge; the clip under the playhead gets the
- * blue selection ring Diffusion Studio uses for selected clips.
+ * A clip's fill and shadow. Highlighted clips (the case studies, their company, the experiments) get a
+ * brighter fill and a glow; the clip under the playhead gets a yellow ring in the playhead's colour.
  */
 export function clipStyle(layer: Layer, { focus = false, live = false }: { focus?: boolean; live?: boolean } = {}): CSSProperties {
   const c = LAYER[layer];
-  const edges = [focus ? `inset 0 0 0 1px color-mix(in srgb, ${c.ink} 55%, transparent)` : null, live ? "0 0 0 2px var(--color-select)" : null].filter(Boolean);
-  return {
-    background: focus ? c.focus : c.fill,
-    color: c.ink,
-    borderRadius: CLIP_RADIUS,
-    boxShadow: edges.length ? edges.join(", ") : undefined,
-  };
+  const shadows = [live ? "0 0 0 2px var(--color-playhead)" : null, focus ? `0 0 14px ${c.glow}` : null, CLIP_SHADOW].filter(Boolean);
+  return { background: focus ? c.focus : c.fill, boxShadow: shadows.join(", ") };
 }
 
 export const INTRO_STYLE = (live: boolean): CSSProperties => ({
-  background: "#edf0f3",
-  color: "#141416",
-  borderRadius: CLIP_RADIUS,
-  boxShadow: live ? "0 0 0 2px var(--color-select)" : undefined,
+  background: body("#ffffff", "#d9d5cb"),
+  boxShadow: live ? `0 0 0 2px var(--color-playhead), ${CLIP_SHADOW}` : CLIP_SHADOW,
 });
 
-/** A fake audio waveform for the company clips. */
+export const LANE_BG = {
+  exp: { background: "rgba(143,92,240,0.07)", boxShadow: "inset 0 2px 6px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(143,92,240,0.22)" },
+  work: { background: "rgba(90,102,224,0.07)", boxShadow: "inset 0 2px 6px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(90,102,224,0.22)" },
+  co: { background: "rgba(47,163,107,0.07)", boxShadow: "inset 0 2px 6px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(47,163,107,0.22)" },
+} as const;
+
+/** A fake audio waveform drawn on the company clips. */
 export const WAVE = (() => {
   let d = "";
   for (let i = 1; i < 200; i += 2.5) {
@@ -69,15 +54,18 @@ export const WAVE = (() => {
   return d;
 })();
 
+/** The playhead's flag, 14×16, pointing down onto the timeline. */
+export const PLAYHEAD_FLAG = "M1 1h12v8l-6 6-6-6z";
+
 export interface RulerMarks {
   ticks: Array<{ at: number; major: boolean }>;
   labels: Array<{ at: number; text: string; minor: boolean }>;
 }
 
 /**
- * Ruler ticks and labels for a zoom level, given in pixels per month. Like Diffusion Studio's ruler,
- * the interval tightens as you zoom in: a tall tick and the year each January, then quarter ticks,
- * then month ticks, with month names once there is room for them. Positions are in timeline months.
+ * Ruler ticks and labels for a zoom level, given in pixels per month: a tall tick and the year each
+ * January, then quarter ticks, then month ticks, with month names once there is room for them.
+ * Positions are in timeline months.
  */
 export function rulerMarks(pxPerMonth: number): RulerMarks {
   const tickStep = pxPerMonth >= 10 ? 1 : 3;

@@ -1,12 +1,12 @@
 "use client";
 
+import { Copy } from "lucide-react";
 import type { CSSProperties } from "react";
 
 import { EMAIL, YEARS, companies, companyName, dateAt, experiments, rangeOf, work } from "@/lib/career";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/ds-icon";
 
 import { CaseStudyBadge } from "./clip-label";
 import type { Suite } from "./edit-suite";
@@ -36,7 +36,7 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
             key={year}
             aria-hidden="true"
             className={cn(
-              "absolute font-sans font-bold leading-none tracking-[-0.05em] text-[#141414]",
+              "absolute font-sans font-bold leading-none tracking-[-0.05em] text-[#141418]",
               phone ? "-bottom-3 right-2.5 text-[112px]" : "-bottom-4 right-[22px] text-[150px]",
             )}
             style={fx(frame.year === year, fade)}
@@ -72,7 +72,7 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
               {w.chips.length > 0 && (
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {w.chips.map((chip) => (
-                    <span key={chip} className={cn("rounded-full border border-work/40 font-mono text-work-ink", phone ? "px-[9px] py-[5px] text-[11px]" : "px-2.5 py-1.5 text-xs")}>
+                    <span key={chip} className={cn("rounded-full border border-[#3f4790] font-mono text-[#e1e4ff]", phone ? "px-[9px] py-[5px] text-[11px]" : "px-2.5 py-1.5 text-xs")}>
                       {chip}
                     </span>
                   ))}
@@ -81,7 +81,7 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
             </div>
             <div
               className={cn(
-                "box-border flex items-center justify-center rounded-lg border border-dashed border-border-input text-center font-mono text-dim",
+                "box-border flex items-center justify-center rounded-[10px] border border-dashed border-[#3a3a44] text-center font-mono text-dim",
                 phone ? "min-h-12 flex-1 p-2.5 text-[10px] leading-normal" : "flex-[0_0_32%] p-4 text-[11px] leading-normal",
               )}
               style={{ background: "repeating-linear-gradient(135deg, rgba(255,255,255,0.035) 0 10px, rgba(255,255,255,0) 10px 20px)" }}
@@ -101,7 +101,7 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
           <div
             key={c.id}
             className={cn(
-              "absolute box-border flex items-center rounded-lg border border-border-input bg-[rgba(12,12,12,0.92)]",
+              "absolute box-border flex items-center rounded-lg border border-[#2b2b31] bg-[rgba(12,12,14,0.92)]",
               phone ? "bottom-3 left-3 max-w-[calc(100%-24px)] gap-2.5 py-[9px] pl-2.5 pr-3" : "bottom-6 left-7 max-w-[calc(100%-56px)] gap-3 py-2.5 pl-3 pr-4",
             )}
             style={fx(showCompany && frame.company?.id === c.id, fade)}
@@ -120,7 +120,7 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
           phone ? (
             <div
               key={x.id}
-              className="absolute right-2.5 top-2.5 box-border flex max-w-[62%] items-center gap-1.5 rounded-md border border-exp/60 bg-[#17122a] px-2 py-1.5"
+              className="absolute right-2.5 top-2.5 box-border flex max-w-[62%] items-center gap-1.5 rounded-[10px] border border-exp bg-[#18121f] px-2 py-1.5"
               style={fx(showExperiment && frame.experiment?.id === x.id, fade)}
             >
               <span aria-hidden="true" className="size-2 shrink-0 rounded-[2px] bg-exp" />
@@ -132,7 +132,7 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
           ) : (
             <div
               key={x.id}
-              className="absolute right-[18px] top-[18px] box-border w-[232px] rounded-lg border border-exp/60 bg-[#17122a] px-3.5 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.5)]"
+              className="absolute right-[18px] top-[18px] box-border w-[232px] rounded-[10px] border border-exp bg-[#18121f] px-3.5 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.5)]"
               style={fx(showExperiment && frame.experiment?.id === x.id, fade)}
             >
               <p className="m-0 mb-1.5 font-mono text-[10px] font-semibold tracking-[0.08em] text-exp-ink">EXPERIMENT · {x.when}</p>
@@ -163,8 +163,8 @@ export function Monitor({ suite, variant }: { suite: Suite; variant: "desktop" |
             >
               {EMAIL}
             </a>
-            <Button variant="secondary" size="lg" onClick={suite.copyEmail}>
-              <Icon name="copy" className="-ml-1 size-5" />
+            <Button onClick={suite.copyEmail}>
+              <Copy className="size-3.5" aria-hidden="true" />
               {suite.copied ? "Copied" : "Copy email"}
             </Button>
           </div>

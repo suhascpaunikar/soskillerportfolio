@@ -8,20 +8,16 @@ import { INTRO, TOTAL, clamp, companies, companyName, dateAt, experiments, range
 import { cn } from "@/lib/utils";
 
 import { ClipLabel } from "./clip-label";
-import { CLIP_HEIGHT, INTRO_STYLE, KNOB_PATH, TICK_MAJOR, TICK_MINOR, WAVE, clipStyle, rulerMarks, waveColor } from "./clip-styles";
+import { CLIP_CLASS, INTRO_STYLE, LANE_BG, PLAYHEAD_FLAG, WAVE, clipStyle, rulerMarks } from "./clip-styles";
 import type { Suite } from "./edit-suite";
 
 /** Pixels per month at the default zoom, and the most a pinch can zoom in. */
 const DEFAULT_PX = 12;
 const MAX_PX = 72;
-/** Space at each end, so the playhead knob isn't cut off at the very start and end. */
-const PAD = 6;
+/** Space at each end, so the playhead flag isn't cut off at the very start and end. */
+const PAD = 7;
 const STEP_MS = 200;
-const RULER = 28;
-const GAP = 4;
-
-const clipBase =
-  "clip absolute inset-y-0 box-border flex cursor-pointer items-center overflow-hidden p-0 text-left outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring";
+const RULER = 24;
 
 /**
  * The timeline fills the strip from the first frame to the last, with no blank space at either end.
@@ -180,22 +176,21 @@ export function PhoneTimeline({ suite }: { suite: Suite }) {
   };
 
   const place = (c: Span): CSSProperties => ({ left: c.s * px, width: (c.e - c.s) * px });
-  const lane = (layer: "exp" | "work" | "co"): CSSProperties => ({ height: CLIP_HEIGHT, opacity: hidden[layer] ? 0.35 : 1 });
   const marks = rulerMarks(px);
   const flip = pos > TOTAL * 0.72;
 
   return (
-    <section aria-label="Timeline" className="flex shrink-0 border-t border-line bg-timeline pb-2 pt-1">
-      <div aria-hidden="true" className="flex w-12 shrink-0 flex-col pl-2.5" style={{ gap: GAP }}>
+    <section aria-label="Timeline" className="flex shrink-0 border-t border-line bg-panel pb-2 pt-1.5">
+      <div aria-hidden="true" className="flex w-12 shrink-0 flex-col gap-1 pl-2.5">
         <div style={{ height: RULER }} />
         {[
-          { label: "EXP", color: "bg-exp" },
-          { label: "WORK", color: "bg-work" },
-          { label: "CO", color: "bg-co" },
+          { label: "EXP", color: "bg-exp", h: "h-14" },
+          { label: "WORK", color: "bg-work", h: "h-11" },
+          { label: "CO", color: "bg-co", h: "h-11" },
         ].map((row) => (
-          <div key={row.label} className="flex flex-col justify-center gap-[5px]" style={{ height: CLIP_HEIGHT }}>
+          <div key={row.label} className={cn("flex flex-col justify-center gap-[5px]", row.h)}>
             <span className={cn("size-2 rounded-[2px]", row.color)} />
-            <span className="font-mono text-[9px] font-medium leading-none tracking-[0.06em] text-muted-foreground">{row.label}</span>
+            <span className="font-mono text-[9px] font-semibold leading-none tracking-[0.06em] text-muted-foreground">{row.label}</span>
           </div>
         ))}
       </div>
@@ -211,10 +206,10 @@ export function PhoneTimeline({ suite }: { suite: Suite }) {
         role="region"
         aria-label="Timeline. Swipe, or use the arrow keys, to scrub through the years. Pinch to zoom."
         aria-keyshortcuts="J K L + -"
-        className="no-scrollbar min-w-0 flex-1 touch-pan-x overflow-x-auto overflow-y-hidden overscroll-x-contain outline-offset-[-2px] focus-visible:outline-2 focus-visible:outline-ring"
+        className="no-scrollbar min-w-0 flex-1 touch-pan-x overflow-x-auto overflow-y-hidden overscroll-x-contain outline-offset-[-2px] focus-visible:outline-2 focus-visible:outline-playhead"
       >
         <div style={{ paddingInline: PAD, width: TOTAL * px, boxSizing: "content-box" }}>
-          <div className="relative flex flex-col" style={{ gap: GAP }}>
+          <div className="relative flex flex-col gap-1">
             <div
               className="relative cursor-ew-resize touch-none"
               style={{ height: RULER }}
@@ -225,29 +220,29 @@ export function PhoneTimeline({ suite }: { suite: Suite }) {
               aria-hidden="true"
             >
               {marks.ticks.map((t) => (
-                <span key={t.at} className="absolute bottom-0 w-px bg-tick" style={{ left: t.at * px, height: t.major ? TICK_MAJOR : TICK_MINOR }} />
+                <span key={t.at} className={cn("absolute bottom-0 w-px", t.major ? "h-3 bg-tick-major" : "h-[5px] bg-tick")} style={{ left: t.at * px }} />
               ))}
               {marks.labels.map((l) => (
                 <span
                   key={`${l.at}-${l.text}`}
-                  className={cn("absolute top-[7px] whitespace-nowrap pl-1 font-mono text-xxs font-light leading-none", l.minor ? "text-ruler-text/70" : "text-ruler-text")}
+                  className={cn("absolute top-[3px] whitespace-nowrap pl-[5px] font-mono leading-none", l.minor ? "text-[9px] text-dim" : "text-[10px] text-muted-foreground")}
                   style={{ left: l.at * px }}
                 >
                   {l.text}
                 </span>
               ))}
-              <span className="absolute right-1 top-[7px] font-mono text-[9px] font-light leading-none text-ruler-text">NOW</span>
+              <span className="absolute right-1 top-[3px] font-mono text-[9px] font-semibold leading-none tracking-[0.06em] text-dim">NOW</span>
             </div>
 
-            <div className="relative flex flex-col" style={{ gap: GAP }}>
-              <div className="relative rounded-[4px] bg-white/[0.02]" style={lane("exp")}>
+            <div className="relative flex flex-col gap-1">
+              <div className="relative h-14 rounded-lg" style={{ ...LANE_BG.exp, opacity: hidden.exp ? 0.35 : 1 }}>
                 {experiments.map((x) => (
                   <button
                     key={x.id}
                     type="button"
                     onClick={() => suite.jump(x.s)}
                     aria-label={`${x.title}, experiment, ${x.when.toLowerCase()}. Shows it in the monitor.`}
-                    className={clipBase}
+                    className={cn(CLIP_CLASS, "top-[14px] h-7 cursor-pointer rounded-[7px] p-0")}
                     style={{ ...place(x), ...clipStyle("exp", { focus: true, live: live.exp === x.id }) }}
                   >
                     <ClipLabel label={x.short} />
@@ -255,14 +250,14 @@ export function PhoneTimeline({ suite }: { suite: Suite }) {
                 ))}
               </div>
 
-              <div className="relative rounded-[4px] bg-white/[0.02]" style={lane("work")}>
+              <div className="relative h-11 rounded-lg" style={{ ...LANE_BG.work, opacity: hidden.work ? 0.35 : 1 }}>
                 {work.map((w) => (
                   <button
                     key={w.id}
                     type="button"
                     onClick={() => suite.jump(w.s)}
                     aria-label={`${w.caseStudy ? "Case study: " : ""}${w.title} at ${companyName(w.company)}, ${rangeOf(w).toLowerCase()}. Shows it in the monitor.`}
-                    className={clipBase}
+                    className={cn(CLIP_CLASS, "top-0.5 h-10 cursor-pointer rounded-lg p-0")}
                     style={{ ...place(w), ...clipStyle("work", { focus: w.caseStudy, live: live.work === w.id }) }}
                   >
                     <ClipLabel eyebrow={w.eyebrow} label={w.label} caseStudy={w.caseStudy} />
@@ -270,18 +265,18 @@ export function PhoneTimeline({ suite }: { suite: Suite }) {
                 ))}
               </div>
 
-              <div className="relative rounded-[4px] bg-white/[0.02]" style={lane("co")}>
+              <div className="relative h-11 rounded-lg" style={{ ...LANE_BG.co, opacity: hidden.co ? 0.35 : 1 }}>
                 {companies.map((c) => (
                   <button
                     key={c.id}
                     type="button"
                     onClick={() => suite.jump(c.s)}
                     aria-label={`${c.name}, ${c.role}, ${c.dates}. Shows it in the monitor.`}
-                    className={clipBase}
+                    className={cn(CLIP_CLASS, "top-0.5 h-10 cursor-pointer rounded-lg p-0")}
                     style={{ ...place(c), ...clipStyle("co", { focus: c.focus, live: live.co === c.id }) }}
                   >
-                    <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true" className="absolute inset-x-1 bottom-0.5 h-3 w-[calc(100%-8px)]">
-                      <path d={WAVE} fill="none" stroke={waveColor("co")} strokeWidth={1} strokeOpacity={0.22} vectorEffect="non-scaling-stroke" />
+                    <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true" className="absolute bottom-0.5 left-1 h-3 w-[calc(100%-8px)]">
+                      <path d={WAVE} fill="none" stroke="#a7ebc8" strokeWidth={1} strokeOpacity={0.35} vectorEffect="non-scaling-stroke" />
                     </svg>
                     <ClipLabel label={c.name} sub={c.sub} />
                   </button>
@@ -292,23 +287,22 @@ export function PhoneTimeline({ suite }: { suite: Suite }) {
                 type="button"
                 onClick={() => suite.jump(0)}
                 aria-label="Intro: name, email and two lines about Suhas. Moves the playhead to the start."
-                className={cn(clipBase, "z-[2] flex-col items-start justify-center gap-1 px-2")}
+                className={cn(CLIP_CLASS, "inset-y-0 left-0 z-[2] cursor-pointer flex-col items-start justify-center gap-[5px] rounded-[9px] px-[9px] text-[#141416] [text-shadow:none]")}
                 style={{ width: INTRO * px, ...INTRO_STYLE(frame.isIntro) }}
               >
-                <span className="text-xs font-semibold leading-none">Intro</span>
-                <span className="whitespace-nowrap font-mono text-[8px] font-medium leading-tight text-[#55555c]">NAME · EMAIL</span>
+                <span className="text-xs font-bold leading-none">Intro</span>
+                <span className="whitespace-nowrap font-mono text-[8px] font-semibold leading-tight text-[#3a3a40]">NAME · EMAIL</span>
               </button>
             </div>
 
             <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 z-[5] w-0" style={{ left: pos * px }}>
-              <span className="absolute -left-px bottom-0 w-[3px] bg-timeline" style={{ top: RULER }} />
-              <span className="absolute bottom-0 left-0 w-px bg-playhead" style={{ top: RULER - 10 }} />
-              <svg width="10" height="13" viewBox="0 0 10 13" className="absolute -left-[5px] overflow-visible" style={{ top: RULER - 14 }}>
-                <path d={KNOB_PATH} fill="var(--color-playhead)" stroke="var(--color-timeline)" strokeWidth={2} paintOrder="stroke" />
+              <span className="absolute -left-px bottom-0 top-2.5 w-0.5 bg-playhead" />
+              <svg width="14" height="16" viewBox="0 0 14 16" className="absolute -left-[7px] -top-0.5">
+                <path d={PLAYHEAD_FLAG} fill="var(--color-playhead)" />
               </svg>
               <span
-                className="absolute top-0 whitespace-nowrap rounded-[3px] bg-playhead px-[5px] py-0.5 font-mono text-[10px] font-semibold leading-none text-playhead-ink"
-                style={{ left: flip ? -8 : 8, transform: flip ? "translateX(-100%)" : undefined }}
+                className="absolute top-0.5 whitespace-nowrap rounded bg-playhead px-[5px] py-0.5 font-mono text-[10px] font-semibold leading-none text-playhead-ink"
+                style={{ left: flip ? -9 : 9, transform: flip ? "translateX(-100%)" : undefined }}
               >
                 {dateAt(pos)}
               </span>

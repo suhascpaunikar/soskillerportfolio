@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, type RefObject } from "react";
 
-/** Diffusion Studio's timeline zoom constants (engine/timeline/config.ts): wheel delta clamp and sensitivity. */
+/** Wheel zoom: the largest delta counted per event, and how much each unit of delta zooms. */
 const ZOOM_DELTA_CLAMP = 50;
 const ZOOM_SENSITIVITY = 0.01;
 

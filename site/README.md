@@ -45,8 +45,7 @@ The files land in `out/`. Setting `PAGES_BASE_PATH` turns on static export and t
 ```
 app/                      routes; every page is prerendered as static HTML
 components/ui/            shadcn-style primitives
-  button.tsx              Diffusion Studio's button (MPL-2.0), ported to React
-  ds-icon.tsx             Diffusion Studio icons (MPL-2.0)
+  button.tsx              pill buttons: dark, white (main call to action) and ghost
   liquid-metal-button.tsx the 21st.dev Liquid Metal Button, patched; only used on /playground
   liquid-metal.tsx        shared shader hook plus MetalButton, MetalLink and MetalShell; currently unused
 components/edit-suite/    the home page: state, monitor, desktop and phone timelines, clip styles, export dialog
@@ -58,7 +57,6 @@ components.json           shadcn config: components in @/components/ui, cn() in 
 ## Notes
 
 - **Content:** edit the career data, copy and dates in `lib/career.ts`.
-- **Fonts:** self-hosted from npm (`@fontsource`), so builds don't depend on Google Fonts. Inter for UI, Instrument Serif for titles, JetBrains Mono for timecodes.
-- **Diffusion Studio:** the look follows the [Diffusion Studio editor](https://github.com/diffusionstudio/editor): its dark theme colours, Inter, the button variants, the icons, and the timeline's sizes, clip colours and playhead knob. Their editor is SolidJS with a canvas timeline, so nothing is imported; the pieces were ported to React. Diffusion Studio is MPL-2.0, so the ported files (`components/ui/button.tsx`, `components/ui/ds-icon.tsx`, `components/edit-suite/clip-styles.ts`) keep the MPL-2.0 header and stay under that licence.
+- **Fonts:** self-hosted from npm (`@fontsource`), so builds don't depend on Google Fonts. Hanken Grotesk for UI, Instrument Serif for titles, JetBrains Mono for timecodes.
 - **Liquid metal:** switched off for now. The components are still in `components/ui/` and on `/playground` if you want it back.
 - **shadcn:** the component registry (ui.shadcn.com) wasn't reachable from the environment this was set up in, so `components.json` and `lib/utils.ts` were written by hand. `npx shadcn@latest add <component>` works from any machine that can reach the registry.

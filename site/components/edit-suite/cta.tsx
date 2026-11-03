@@ -1,9 +1,9 @@
 "use client";
 
+import { ArrowRight, Play } from "lucide-react";
 import Link from "next/link";
 
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Icon } from "@/components/ui/ds-icon";
 import { cn } from "@/lib/utils";
 
 import type { Suite } from "./edit-suite";
@@ -12,33 +12,33 @@ import type { Suite } from "./edit-suite";
 export function Cta({ suite, phone = false }: { suite: Suite; phone?: boolean }) {
   const { frame, hidden } = suite;
   const work = hidden.work ? null : frame.work;
-  const size = "lg";
+  const size = phone ? "lg" : "default";
 
   if (frame.isIntro && !phone) {
     return (
-      <Button variant="secondary" size={size} onClick={suite.togglePlay}>
-        <Icon name="play-solid" className="-ml-1 size-5" />
+      <Button size={size} onClick={suite.togglePlay}>
+        <Play className="size-3 fill-current" aria-hidden="true" />
         Play the reel
       </Button>
     );
   }
   if (work?.href) {
     return (
-      <Link href={work.href} className={buttonVariants({ variant: work.caseStudy ? "default" : "secondary", size })}>
+      <Link href={work.href} className={buttonVariants({ variant: work.caseStudy ? "accent" : "default", size, className: phone && !work.caseStudy ? "text-playhead" : undefined })}>
         {work.cta}
-        <Icon name="arrow-right" className="-mr-1 size-5" />
+        <ArrowRight className="size-3.5" aria-hidden="true" />
       </Link>
     );
   }
   if (work) {
     return (
-      <Button variant="secondary" size={size} onClick={suite.openExport}>
+      <Button size={size} onClick={suite.openExport}>
         {phone ? "Ask me about it" : "No case study yet · ask me about it"}
       </Button>
     );
   }
   return (
-    <span className={cn(buttonVariants({ variant: "ghost", size }), "pointer-events-none cursor-default text-muted-foreground")}>
+    <span className={cn(buttonVariants({ size }), "pointer-events-none cursor-default text-muted-foreground opacity-70")}>
       {frame.isIntro ? (phone ? "Swipe or pinch the timeline" : "Swipe the timeline") : phone ? "Swipe to the next clip" : "Keep scrubbing"}
     </span>
   );

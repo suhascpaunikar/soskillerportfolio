@@ -12,7 +12,7 @@ export function ComingSoon({ eyebrow, title, line }: { eyebrow: string; title: s
       <p className="m-0 max-w-[52ch] text-lg leading-relaxed text-soft">{line}</p>
       <p className="m-0 font-mono text-xs text-dim">This page is still in the edit.</p>
       <div>
-        <Link href="/" className={buttonVariants({ variant: "secondary", size: "lg" })}>
+        <Link href="/" className={buttonVariants({ size: "lg" })}>
           <ArrowLeft className="size-4" aria-hidden="true" />
           Back to the edit
         </Link>
