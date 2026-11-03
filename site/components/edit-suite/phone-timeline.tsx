@@ -16,7 +16,6 @@ const DEFAULT_PX = 12;
 const MAX_PX = 72;
 /** Space at each end, so the playhead flag isn't cut off at the very start and end. */
 const PAD = 7;
-const STEP_MS = 200;
 const RULER = 24;
 
 /**
@@ -30,7 +29,6 @@ export function PhoneTimeline({ suite }: { suite: Suite }) {
   const scroller = useRef<HTMLDivElement>(null);
   /** The last position reported by a scroll, so we don't scroll back to where the user already is. */
   const fromScroll = useRef<number | null>(null);
-  const tweening = useRef(false);
   /** True while the scroll position is being set to follow a zoom or resize. */
   const relayout = useRef(false);
   /** True while a finger drags along the ruler. */
@@ -92,34 +90,21 @@ export function PhoneTimeline({ suite }: { suite: Suite }) {
       return;
     }
 
-    if (running && !reduced) {
-      // While the reel plays, glide one month per step instead of jumping.
-      const start = el.scrollLeft;
-      const t0 = performance.now();
-      let raf = 0;
-      tweening.current = true;
-      const tick = (now: number) => {
-        const k = Math.min(1, (now - t0) / STEP_MS);
-        el.scrollLeft = start + (target - start) * k;
-        if (k < 1) raf = requestAnimationFrame(tick);
-        else tweening.current = false;
-      };
-      raf = requestAnimationFrame(tick);
-      return () => {
-        cancelAnimationFrame(raf);
-        tweening.current = false;
-      };
+    if (running) {
+      // The reel moves the playhead a little every frame, so the scroll simply follows it.
+      el.scrollLeft = target;
+      return;
     }
 
-    el.scrollTo({ left: target, behavior: reduced || running ? "auto" : "smooth" });
+    el.scrollTo({ left: target, behavior: reduced ? "auto" : "smooth" });
   }, [pos, px, viewport, running, reduced]);
 
   const onScroll = () => {
     const el = scroller.current;
-    if (!el || tweening.current || relayout.current || pinching.current || scrubbing.current) return;
+    if (!el || running || relayout.current || pinching.current || scrubbing.current) return;
     const max = el.scrollWidth - el.clientWidth;
     if (max <= 0) return;
-    const p = clamp(Math.round((el.scrollLeft / max) * TOTAL));
+    const p = clamp((el.scrollLeft / max) * TOTAL);
     fromScroll.current = p;
     if (p !== pos) suite.seek(p);
   };
@@ -135,7 +120,8 @@ export function PhoneTimeline({ suite }: { suite: Suite }) {
     const rect = el.getBoundingClientRect();
     const span = el.clientWidth - PAD * 2;
     if (span <= 0) return;
-    suite.jump(((clientX - rect.left - PAD) / span) * TOTAL);
+    suite.pause();
+    suite.seek(((clientX - rect.left - PAD) / span) * TOTAL);
   };
   const onRulerDown = (e: PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -195,119 +181,136 @@ export function PhoneTimeline({ suite }: { suite: Suite }) {
         ))}
       </div>
 
-      <div
-        ref={scroller}
-        onScroll={onScroll}
-        onTouchStart={interrupt}
-        onWheel={interrupt}
-        onPointerDown={interrupt}
-        onKeyDown={onKeys}
-        tabIndex={0}
-        role="region"
-        aria-label="Timeline. Swipe, or use the arrow keys, to scrub through the years. Pinch to zoom."
-        aria-keyshortcuts="J K L + -"
-        className="no-scrollbar min-w-0 flex-1 touch-pan-x overflow-x-auto overflow-y-hidden overscroll-x-contain outline-offset-[-2px] focus-visible:outline-2 focus-visible:outline-playhead"
-      >
-        <div style={{ paddingInline: PAD, width: TOTAL * px, boxSizing: "content-box" }}>
-          <div className="relative flex flex-col gap-1">
-            <div
-              className="relative cursor-ew-resize touch-none"
-              style={{ height: RULER }}
-              onPointerDown={onRulerDown}
-              onPointerMove={onRulerMove}
-              onPointerUp={onRulerUp}
-              onPointerCancel={onRulerUp}
-              aria-hidden="true"
-            >
-              {marks.ticks.map((t) => (
-                <span key={t.at} className={cn("absolute bottom-0 w-px", t.major ? "h-3 bg-tick-major" : "h-[5px] bg-tick")} style={{ left: t.at * px }} />
-              ))}
-              {marks.labels.map((l) => (
-                <span
-                  key={`${l.at}-${l.text}`}
-                  className={cn("absolute top-[3px] whitespace-nowrap pl-[5px] font-mono leading-none", l.minor ? "text-[9px] text-dim" : "text-[10px] text-muted-foreground")}
-                  style={{ left: l.at * px }}
-                >
-                  {l.text}
-                </span>
-              ))}
-              <span className="absolute right-1 top-[3px] font-mono text-[9px] font-semibold leading-none tracking-[0.06em] text-dim">NOW</span>
-            </div>
-
+      <div className="relative min-w-0 flex-1">
+        <div
+          ref={scroller}
+          onScroll={onScroll}
+          onTouchStart={interrupt}
+          onWheel={interrupt}
+          onPointerDown={interrupt}
+          onKeyDown={onKeys}
+          tabIndex={0}
+          role="region"
+          aria-label="Timeline. Swipe, or use the arrow keys, to scrub through the years. Pinch to zoom."
+          aria-keyshortcuts="J K L + -"
+          className="no-scrollbar w-full touch-pan-x overflow-x-auto overflow-y-hidden overscroll-x-contain outline-offset-[-2px] focus-visible:outline-2 focus-visible:outline-playhead"
+        >
+          <div style={{ paddingInline: PAD, width: TOTAL * px, boxSizing: "content-box" }}>
             <div className="relative flex flex-col gap-1">
-              <div className="relative h-14 rounded-lg" style={{ ...LANE_BG.exp, opacity: hidden.exp ? 0.35 : 1 }}>
-                {experiments.map((x) => (
-                  <button
-                    key={x.id}
-                    type="button"
-                    onClick={() => suite.jump(x.s)}
-                    aria-label={`${x.title}, experiment, ${x.when.toLowerCase()}. Shows it in the monitor.`}
-                    className={cn(CLIP_CLASS, "top-[14px] h-7 cursor-pointer rounded-[7px] p-0")}
-                    style={{ ...place(x), ...clipStyle("exp", { focus: true, live: live.exp === x.id }) }}
-                  >
-                    <ClipLabel label={x.short} />
-                  </button>
-                ))}
-              </div>
-
-              <div className="relative h-11 rounded-lg" style={{ ...LANE_BG.work, opacity: hidden.work ? 0.35 : 1 }}>
-                {work.map((w) => (
-                  <button
-                    key={w.id}
-                    type="button"
-                    onClick={() => suite.jump(w.s)}
-                    aria-label={`${w.caseStudy ? "Case study: " : ""}${w.title} at ${companyName(w.company)}, ${rangeOf(w).toLowerCase()}. Shows it in the monitor.`}
-                    className={cn(CLIP_CLASS, "top-0.5 h-10 cursor-pointer rounded-lg p-0")}
-                    style={{ ...place(w), ...clipStyle("work", { focus: w.caseStudy, live: live.work === w.id }) }}
-                  >
-                    <ClipLabel eyebrow={w.eyebrow} label={w.label} caseStudy={w.caseStudy} />
-                  </button>
-                ))}
-              </div>
-
-              <div className="relative h-11 rounded-lg" style={{ ...LANE_BG.co, opacity: hidden.co ? 0.35 : 1 }}>
-                {companies.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => suite.jump(c.s)}
-                    aria-label={`${c.name}, ${c.role}, ${c.dates}. Shows it in the monitor.`}
-                    className={cn(CLIP_CLASS, "top-0.5 h-10 cursor-pointer rounded-lg p-0")}
-                    style={{ ...place(c), ...clipStyle("co", { focus: c.focus, live: live.co === c.id }) }}
-                  >
-                    <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true" className="absolute bottom-0.5 left-1 h-3 w-[calc(100%-8px)]">
-                      <path d={WAVE} fill="none" stroke="#a7ebc8" strokeWidth={1} strokeOpacity={0.35} vectorEffect="non-scaling-stroke" />
-                    </svg>
-                    <ClipLabel label={c.name} sub={c.sub} />
-                  </button>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => suite.jump(0)}
-                aria-label="Intro: name, email and two lines about Suhas. Moves the playhead to the start."
-                className={cn(CLIP_CLASS, "inset-y-0 left-0 z-[2] cursor-pointer flex-col items-start justify-center gap-[5px] rounded-[9px] px-[9px] text-[#141416] [text-shadow:none]")}
-                style={{ width: INTRO * px, ...INTRO_STYLE(frame.isIntro) }}
+              <div
+                className="relative cursor-ew-resize touch-none"
+                style={{ height: RULER }}
+                onPointerDown={onRulerDown}
+                onPointerMove={onRulerMove}
+                onPointerUp={onRulerUp}
+                onPointerCancel={onRulerUp}
+                aria-hidden="true"
               >
-                <span className="text-xs font-bold leading-none">Intro</span>
-                <span className="whitespace-nowrap font-mono text-[8px] font-semibold leading-tight text-[#3a3a40]">NAME · EMAIL</span>
-              </button>
-            </div>
+                {marks.ticks.map((t) => (
+                  <span key={t.at} className={cn("absolute bottom-0 w-px", t.major ? "h-3 bg-tick-major" : "h-[5px] bg-tick")} style={{ left: t.at * px }} />
+                ))}
+                {marks.labels.map((l) => (
+                  <span
+                    key={`${l.at}-${l.text}`}
+                    className={cn(
+                      "absolute top-[3px] whitespace-nowrap pl-[5px] font-mono leading-none",
+                      l.minor ? "text-[9px] text-dim" : "text-[10px] text-muted-foreground",
+                    )}
+                    style={{ left: l.at * px }}
+                  >
+                    {l.text}
+                  </span>
+                ))}
+                <span className="absolute right-1 top-[3px] font-mono text-[9px] font-semibold leading-none tracking-[0.06em] text-dim">NOW</span>
+              </div>
 
-            <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 z-[5] w-0" style={{ left: pos * px }}>
-              <span className="absolute -left-px bottom-0 top-2.5 w-0.5 bg-playhead" />
-              <svg width="14" height="16" viewBox="0 0 14 16" className="absolute -left-[7px] -top-0.5">
-                <path d={PLAYHEAD_FLAG} fill="var(--color-playhead)" />
-              </svg>
-              <span
-                className="absolute top-0.5 whitespace-nowrap rounded bg-playhead px-[5px] py-0.5 font-mono text-[10px] font-semibold leading-none text-playhead-ink"
-                style={{ left: flip ? -9 : 9, transform: flip ? "translateX(-100%)" : undefined }}
-              >
-                {dateAt(pos)}
-              </span>
+              <div className="relative flex flex-col gap-1">
+                <div className="relative h-14 rounded-lg" style={{ ...LANE_BG.exp, opacity: hidden.exp ? 0.35 : 1 }}>
+                  {experiments.map((x) => (
+                    <button
+                      key={x.id}
+                      type="button"
+                      onClick={() => suite.jump(x.s)}
+                      aria-label={`${x.title}, experiment, ${x.when.toLowerCase()}. Shows it in the monitor.`}
+                      className={cn(CLIP_CLASS, "top-[14px] h-7 cursor-pointer rounded-[7px] p-0")}
+                      style={{ ...place(x), ...clipStyle("exp", { focus: true, live: live.exp === x.id }) }}
+                    >
+                      <ClipLabel label={x.short} />
+                    </button>
+                  ))}
+                </div>
+
+                <div className="relative h-11 rounded-lg" style={{ ...LANE_BG.work, opacity: hidden.work ? 0.35 : 1 }}>
+                  {work.map((w) => (
+                    <button
+                      key={w.id}
+                      type="button"
+                      onClick={() => suite.jump(w.s)}
+                      aria-label={`${w.caseStudy ? "Case study: " : ""}${w.title} at ${companyName(w.company)}, ${rangeOf(w).toLowerCase()}. Shows it in the monitor.`}
+                      className={cn(CLIP_CLASS, "top-0.5 h-10 cursor-pointer rounded-lg p-0")}
+                      style={{ ...place(w), ...clipStyle("work", { focus: w.caseStudy, live: live.work === w.id }) }}
+                    >
+                      <ClipLabel eyebrow={w.eyebrow} label={w.label} caseStudy={w.caseStudy} />
+                    </button>
+                  ))}
+                </div>
+
+                <div className="relative h-11 rounded-lg" style={{ ...LANE_BG.co, opacity: hidden.co ? 0.35 : 1 }}>
+                  {companies.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => suite.jump(c.s)}
+                      aria-label={`${c.name}, ${c.role}, ${c.dates}. Shows it in the monitor.`}
+                      className={cn(CLIP_CLASS, "top-0.5 h-10 cursor-pointer rounded-lg p-0")}
+                      style={{ ...place(c), ...clipStyle("co", { focus: c.focus, live: live.co === c.id }) }}
+                    >
+                      <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true" className="absolute bottom-0.5 left-1 h-3 w-[calc(100%-8px)]">
+                        <path d={WAVE} fill="none" stroke="#a7ebc8" strokeWidth={1} strokeOpacity={0.35} vectorEffect="non-scaling-stroke" />
+                      </svg>
+                      <ClipLabel label={c.name} sub={c.sub} />
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => suite.jump(0)}
+                  aria-label="Intro: name, email and two lines about Suhas. Moves the playhead to the start."
+                  className={cn(
+                    CLIP_CLASS,
+                    "inset-y-0 left-0 z-[2] cursor-pointer flex-col items-start justify-center gap-[5px] rounded-[9px] px-[9px] text-[#141416] [text-shadow:none]",
+                  )}
+                  style={{ width: INTRO * px, ...INTRO_STYLE(frame.isIntro) }}
+                >
+                  <span className="text-xs font-bold leading-none">Intro</span>
+                  <span className="whitespace-nowrap font-mono text-[8px] font-semibold leading-tight text-[#3a3a40]">NAME · EMAIL</span>
+                </button>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/*
+        The playhead sits over the strip rather than inside it, positioned by fraction, so it glides
+        smoothly even though the strip's scroll position snaps to whole pixels. Swipes, scrubs and
+        playback keep the two in step: on screen it is PAD + fraction × (width − 2·PAD).
+      */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-0 will-change-transform"
+          style={{ transform: `translateX(${PAD + (pos / TOTAL) * Math.max(0, viewport - PAD * 2)}px)` }}
+        >
+          <span className="absolute -left-px bottom-0 top-2.5 w-0.5 bg-playhead" />
+          <svg width="14" height="16" viewBox="0 0 14 16" className="absolute -left-[7px] -top-0.5">
+            <path d={PLAYHEAD_FLAG} fill="var(--color-playhead)" />
+          </svg>
+          <span
+            className="absolute top-0.5 whitespace-nowrap rounded bg-playhead px-[5px] py-0.5 font-mono text-[10px] font-semibold leading-none text-playhead-ink"
+            style={{ left: flip ? -9 : 9, transform: flip ? "translateX(-100%)" : undefined }}
+          >
+            {dateAt(pos)}
+          </span>
         </div>
       </div>
     </section>

@@ -34,7 +34,8 @@ export interface Suite {
   openExport: () => void;
 }
 
-const FRAME_MS = 200;
+/** Playback speed, in timeline months per second. */
+const MONTHS_PER_SECOND = 5;
 
 export function EditSuite() {
   const reduced = usePrefersReducedMotion();
@@ -50,8 +51,17 @@ export function EditSuite() {
 
   useEffect(() => {
     if (!running) return;
-    const id = setInterval(() => setPos((p) => Math.min(TOTAL, p + 1)), FRAME_MS);
-    return () => clearInterval(id);
+    // Advance a little every animation frame so the playhead glides instead of stepping month by month.
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      setPos((p) => Math.min(TOTAL, p + dt * MONTHS_PER_SECOND));
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [running]);
 
   useEffect(() => {
@@ -65,7 +75,8 @@ export function EditSuite() {
     setPos(clamp(Math.round(v)));
   }, []);
 
-  const seek = useCallback((v: number) => setPos(clamp(Math.round(v))), []);
+  /** Exact, possibly fractional, so swiping and scrubbing the phone timeline glide instead of snapping to months. */
+  const seek = useCallback((v: number) => setPos(clamp(v)), []);
   const pause = useCallback(() => setPlaying(false), []);
 
   const togglePlay = useCallback(() => {

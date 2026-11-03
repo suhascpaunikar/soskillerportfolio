@@ -97,6 +97,11 @@ export function DesktopTimeline({ suite }: { suite: Suite }) {
     if (!el || zoomRef.current <= 1) return;
     const x = (pos / TOTAL) * el.scrollWidth;
     const { scrollLeft, clientWidth } = el;
+    if (running && x >= scrollLeft) {
+      // While playing, scroll along with the playhead once it passes 70% of the view.
+      if (x > scrollLeft + clientWidth * 0.7) el.scrollLeft = x - clientWidth * 0.7;
+      return;
+    }
     if (x >= scrollLeft + 24 && x <= scrollLeft + clientWidth - 24) return;
     el.scrollTo({ left: x - clientWidth * (running ? 0.1 : 0.35), behavior: running || reduced ? "auto" : "smooth" });
   }, [pos, running, reduced]);
@@ -157,7 +162,11 @@ export function DesktopTimeline({ suite }: { suite: Suite }) {
         </div>
         <div className="flex items-center gap-3 justify-self-end">
           <span className="text-xs text-dim">Drag the years to scrub · pinch to zoom · click a clip to open it</span>
-          <div role="group" aria-label="Zoom" className="flex items-center gap-0.5 rounded-full bg-[#0a0a0c] p-[3px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.7),inset_0_0_0_1px_#000,0_1px_0_rgba(255,255,255,0.06)]">
+          <div
+            role="group"
+            aria-label="Zoom"
+            className="flex items-center gap-0.5 rounded-full bg-[#0a0a0c] p-[3px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.7),inset_0_0_0_1px_#000,0_1px_0_rgba(255,255,255,0.06)]"
+          >
             <Button variant="ghost" size="icon-sm" onClick={() => zoomTo(zoom / ZOOM_STEP)} disabled={zoom <= 1} aria-label="Zoom out" title="Zoom out (−)">
               <Minus className="size-3.5" aria-hidden="true" />
             </Button>
@@ -171,7 +180,14 @@ export function DesktopTimeline({ suite }: { suite: Suite }) {
             >
               {Math.round(zoom * 100)}%
             </Button>
-            <Button variant="ghost" size="icon-sm" onClick={() => zoomTo(zoom * ZOOM_STEP)} disabled={zoom >= MAX_ZOOM} aria-label="Zoom in" title="Zoom in (+)">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => zoomTo(zoom * ZOOM_STEP)}
+              disabled={zoom >= MAX_ZOOM}
+              aria-label="Zoom in"
+              title="Zoom in (+)"
+            >
               <Plus className="size-3.5" aria-hidden="true" />
             </Button>
           </div>
@@ -315,7 +331,10 @@ export function DesktopTimeline({ suite }: { suite: Suite }) {
                 onClick={() => suite.jump(0)}
                 title="Intro"
                 aria-label="Intro: name, email and two lines about Suhas. Moves the playhead to the start."
-                className={cn(CLIP_CLASS, "inset-y-0 left-0 z-[2] cursor-pointer flex-col items-start justify-center gap-[5px] rounded-[9px] px-2.5 text-[#141416] [text-shadow:none]")}
+                className={cn(
+                  CLIP_CLASS,
+                  "inset-y-0 left-0 z-[2] cursor-pointer flex-col items-start justify-center gap-[5px] rounded-[9px] px-2.5 text-[#141416] [text-shadow:none]",
+                )}
                 style={{ width: `${pct(INTRO)}%`, ...INTRO_STYLE(frame.isIntro) }}
               >
                 <span className="text-xs font-bold leading-none">Intro</span>

@@ -204,8 +204,11 @@ export const experiments: Experiment[] = [
 
 export const EMAIL = "paunikarsuhas@gmail.com";
 
-export const monthLabel = (v: number) =>
-  `${MONTHS[(((v - INTRO) % 12) + 12) % 12]} ${START_YEAR + Math.floor((v - INTRO) / 12)}`;
+/** The month a timeline position falls in. Positions are fractional while the reel plays. */
+export const monthLabel = (v: number) => {
+  const m = Math.floor(v) - INTRO;
+  return `${MONTHS[((m % 12) + 12) % 12]} ${START_YEAR + Math.floor(m / 12)}`;
+};
 
 export const dateAt = (v: number) => (v < INTRO ? "INTRO" : v >= TOTAL ? "NOW" : monthLabel(v));
 
