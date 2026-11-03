@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import type { CSSProperties, KeyboardEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/ds-icon";
 import { INTRO, TOTAL, companies, companyName, dateAt, describe, experiments, pct, rangeOf, work, type Span } from "@/lib/career";
+import { usePrefersReducedMotion } from "@/hooks/use-media-query";
+import { usePinchZoom } from "@/hooks/use-pinch-zoom";
 import { cn } from "@/lib/utils";
 
 import { ClipLabel } from "./clip-label";
-import { CLIP_HEIGHT, INTRO_STYLE, KNOB_PATH, RULER_HEIGHT, RULER_LABELS, TICKS, TICK_MAJOR, TICK_MINOR, WAVE, clipStyle, waveColor } from "./clip-styles";
+import { CLIP_HEIGHT, INTRO_STYLE, KNOB_PATH, RULER_HEIGHT, TICK_MAJOR, TICK_MINOR, WAVE, clipStyle, rulerMarks, waveColor } from "./clip-styles";
 import type { LayerKey, Suite } from "./edit-suite";
 
 const ROWS: Array<{ key: LayerKey; name: string; color: string }> = [
@@ -19,6 +21,8 @@ const ROWS: Array<{ key: LayerKey; name: string; color: string }> = [
 ];
 
 const ROW_GAP = 4;
+const MAX_ZOOM = 8;
+const ZOOM_STEP = 1.5;
 
 const place = (c: Span): CSSProperties => ({ left: `${pct(c.s)}%`, width: `${pct(c.e - c.s)}%` });
 
@@ -27,11 +31,95 @@ const clipBase =
 
 export function DesktopTimeline({ suite }: { suite: Suite }) {
   const { pos, frame, running, hidden } = suite;
-  const flip = pos > TOTAL * 0.86;
+  const reduced = usePrefersReducedMotion();
+
+  // Zoom: 1 fits the whole career; up to MAX_ZOOM times wider, scrolled horizontally.
+  const scroller = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef(1);
+  const anchor = useRef<{ frac: number; x: number } | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [view, setView] = useState({ left: 0, width: 0 });
+
+  /** Zoom to `next`, keeping the point `x` pixels from the left edge of the view where it is. */
+  const zoomTo = (next: number, x?: number) => {
+    const el = scroller.current;
+    if (!el) return;
+    const z = Math.min(MAX_ZOOM, Math.max(1, next));
+    if (Math.abs(z - zoomRef.current) < 0.001) return;
+    const width = el.clientWidth;
+    if (x === undefined) {
+      // Buttons and keys zoom around the playhead, or bring it to the middle if it's off screen.
+      const at = (pos / TOTAL) * el.scrollWidth - el.scrollLeft;
+      anchor.current = { frac: pos / TOTAL, x: at >= 0 && at <= width ? at : width / 2 };
+    } else {
+      anchor.current = { frac: (el.scrollLeft + x) / el.scrollWidth, x };
+    }
+    zoomRef.current = z;
+    setZoom(z);
+  };
+
+  usePinchZoom(scroller, (factor, clientX) => {
+    const el = scroller.current;
+    if (el) zoomTo(zoomRef.current * factor, clientX - el.getBoundingClientRect().left);
+  });
+
+  // After a zoom, scroll so the anchor point stays put.
+  useLayoutEffect(() => {
+    const el = scroller.current;
+    const a = anchor.current;
+    if (!el || !a) return;
+    el.scrollLeft = a.frac * el.scrollWidth - a.x;
+    anchor.current = null;
+  }, [zoom]);
+
+  // Track the visible window, for ruler density and the playhead label.
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const measure = () => setView({ left: el.scrollLeft, width: el.clientWidth });
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    el.addEventListener("scroll", measure, { passive: true });
+    // A mouse wheel pans the zoomed timeline sideways, as in an editor; Ctrl/⌘ + wheel zooms (see usePinchZoom).
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey || zoomRef.current <= 1 || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      ro.disconnect();
+      el.removeEventListener("scroll", measure);
+      el.removeEventListener("wheel", onWheel);
+    };
+  }, []);
+
+  // Keep the playhead in view while it moves (playback, clip jumps), unless the whole timeline fits.
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el || zoomRef.current <= 1) return;
+    const x = (pos / TOTAL) * el.scrollWidth;
+    const { scrollLeft, clientWidth } = el;
+    if (x >= scrollLeft + 24 && x <= scrollLeft + clientWidth - 24) return;
+    el.scrollTo({ left: x - clientWidth * (running ? 0.1 : 0.35), behavior: running || reduced ? "auto" : "smooth" });
+  }, [pos, running, reduced]);
+
+  const contentWidth = view.width * zoom;
+  const marks = rulerMarks(view.width ? contentWidth / TOTAL : 12);
+  const flip = view.width ? (pos / TOTAL) * contentWidth - view.left > view.width - 90 : pos > TOTAL * 0.86;
 
   const onKeys = (e: KeyboardEvent<HTMLElement>) => {
     const k = e.key.toLowerCase();
-    if (k === "j") {
+    if (k === "=" || k === "+") {
+      e.preventDefault();
+      zoomTo(zoom * ZOOM_STEP);
+    } else if (k === "-" || k === "_") {
+      e.preventDefault();
+      zoomTo(zoom / ZOOM_STEP);
+    } else if (k === "0") {
+      e.preventDefault();
+      zoomTo(1);
+    } else if (k === "j") {
       e.preventDefault();
       suite.prev();
     } else if (k === "l") {
@@ -71,7 +159,28 @@ export function DesktopTimeline({ suite }: { suite: Suite }) {
             <Icon name="go-to-end" />
           </Button>
         </div>
-        <span className="justify-self-end text-xs text-dim">Drag along the years to scrub · click a clip to open it</span>
+        <div className="flex items-center gap-3 justify-self-end">
+          <span className="text-xs text-dim">Drag the years to scrub · pinch to zoom · click a clip to open it</span>
+          <div role="group" aria-label="Zoom" className="flex items-center rounded-md bg-input">
+            <Button variant="ghost" size="icon-square" onClick={() => zoomTo(zoom / ZOOM_STEP)} disabled={zoom <= 1} aria-label="Zoom out" title="Zoom out (−)">
+              <Icon name="minus" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="small"
+              className="h-7 min-w-11 px-1 font-mono tabular-nums text-muted-foreground"
+              onClick={() => zoomTo(1)}
+              disabled={zoom <= 1}
+              aria-label={`Zoom ${Math.round(zoom * 100)}%. Fit the whole timeline.`}
+              title="Fit the whole timeline (0)"
+            >
+              {Math.round(zoom * 100)}%
+            </Button>
+            <Button variant="ghost" size="icon-square" onClick={() => zoomTo(zoom * ZOOM_STEP)} disabled={zoom >= MAX_ZOOM} aria-label="Zoom in" title="Zoom in (+)">
+              <Icon name="plus" />
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div className="flex min-h-0 pb-3 pr-4">
@@ -98,9 +207,10 @@ export function DesktopTimeline({ suite }: { suite: Suite }) {
           ))}
         </div>
 
-        <div className="relative flex min-w-0 flex-1 flex-col" style={{ gap: ROW_GAP }}>
+        <div ref={scroller} className="no-scrollbar min-w-0 flex-1 touch-pan-x overflow-x-auto overflow-y-hidden overscroll-x-contain">
+        <div className="relative flex flex-col" style={{ gap: ROW_GAP, width: `${zoom * 100}%` }}>
           <div className="relative" style={{ height: RULER_HEIGHT }}>
-            {TICKS.map((t) => (
+            {marks.ticks.map((t) => (
               <span
                 key={t.at}
                 aria-hidden="true"
@@ -108,11 +218,11 @@ export function DesktopTimeline({ suite }: { suite: Suite }) {
                 style={{ left: `${pct(t.at)}%`, height: t.major ? TICK_MAJOR : TICK_MINOR }}
               />
             ))}
-            {RULER_LABELS.map((l) => (
+            {marks.labels.map((l) => (
               <span
-                key={l.text}
+                key={`${l.at}-${l.text}`}
                 aria-hidden="true"
-                className="absolute top-[13px] font-mono text-xxs font-light leading-none text-ruler-text"
+                className={cn("absolute top-[13px] font-mono text-xxs font-light leading-none", l.minor ? "text-ruler-text/70" : "text-ruler-text")}
                 style={{ left: `calc(${pct(l.at)}% + 4px)` }}
               >
                 {l.text}
@@ -132,7 +242,7 @@ export function DesktopTimeline({ suite }: { suite: Suite }) {
               onKeyDown={onKeys}
               aria-label="Scrub through the years"
               aria-valuetext={describe(frame)}
-              aria-keyshortcuts="J K L"
+              aria-keyshortcuts="J K L + - 0"
             />
             <div className="scrub-ring pointer-events-none absolute inset-0 rounded-md" aria-hidden="true" />
           </div>
@@ -232,6 +342,7 @@ export function DesktopTimeline({ suite }: { suite: Suite }) {
               {dateAt(pos)}
             </span>
           </div>
+        </div>
         </div>
       </div>
     </section>

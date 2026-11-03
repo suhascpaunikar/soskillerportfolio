@@ -39,7 +39,7 @@ export function Cta({ suite, phone = false }: { suite: Suite; phone?: boolean })
   }
   return (
     <span className={cn(buttonVariants({ variant: "ghost", size }), "pointer-events-none cursor-default text-muted-foreground")}>
-      {frame.isIntro ? "Swipe the timeline" : phone ? "Swipe to the next clip" : "Keep scrubbing"}
+      {frame.isIntro ? (phone ? "Swipe or pinch the timeline" : "Swipe the timeline") : phone ? "Swipe to the next clip" : "Keep scrubbing"}
     </span>
   );
 }

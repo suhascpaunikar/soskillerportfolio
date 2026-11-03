@@ -35,7 +35,8 @@ The files land in `out/`. Setting `PAGES_BASE_PATH` turns on static export and t
 - `/` is the home page, an edit suite.
   - **Desktop:** a program monitor and a timeline that runs by year. The timeline has three layers: experiments on top, work in the middle, companies at the bottom. Drag along the year ruler to scrub; the monitor cross-dissolves layer by layer. Click a clip to open its page.
   - **Highlighted clips:** the two finished case studies (Pickup in store, AI progressive measurements) carry a "Case study" tag, and they, Lenskart and every experiment get a brighter fill. Set `caseStudy` on a work item or `focus` on a company in `lib/career.ts` to change which.
-  - **Phone:** the same three layers. The playhead stays fixed in the middle and you swipe the timeline under it.
+  - **Zoom:** pinch to zoom the timeline (two fingers on touch screens, trackpad pinch, or Ctrl/⌘ + scroll). On desktop there are also − / % / + buttons and the + − 0 keys; a plain mouse wheel pans a zoomed timeline. The ruler adds month ticks and names as you zoom in.
+  - **Phone:** the same three layers, filling the strip edge to edge. Swiping scrubs: the playhead travels from the left edge at the intro to the right edge at "now", while the timeline scrolls with it. Drag along the ruler to put the playhead under your finger.
 - `/playground` holds the 21st.dev Liquid Metal Button demo. The liquid metal is off everywhere else for now.
 - `/work/pickup-in-store`, `/work/ai-progressive-measurements`, `/lab`, `/about`, `/now` and `/resume` are placeholders until those pages are built.
 

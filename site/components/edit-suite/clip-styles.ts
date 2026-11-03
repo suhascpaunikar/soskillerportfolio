@@ -11,7 +11,7 @@
 
 import type { CSSProperties } from "react";
 
-import { INTRO, YEARS, at } from "@/lib/career";
+import { INTRO, SPAN_MONTHS, YEARS, at, monthLabel } from "@/lib/career";
 
 /** Diffusion Studio: RULER_HEIGHT, RULER_TICK_HEIGHT_MAJOR / MINOR, CLIP_CORNER_RADIUS, DEFAULT_CLIP_HEIGHT. */
 export const RULER_HEIGHT = 36;
@@ -69,10 +69,24 @@ export const WAVE = (() => {
   return d;
 })();
 
-/** Ruler ticks: a tall one each January, short ones each quarter. Positions are in timeline months. */
-export const TICKS = [
-  { at: 0, major: true },
-  ...Array.from({ length: Math.ceil(95 / 3) }, (_, i) => ({ at: INTRO + i * 3, major: (i * 3) % 12 === 0 })),
-];
+export interface RulerMarks {
+  ticks: Array<{ at: number; major: boolean }>;
+  labels: Array<{ at: number; text: string; minor: boolean }>;
+}
 
-export const RULER_LABELS = [{ at: 0, text: "INTRO" }, ...YEARS.map((y) => ({ at: at(y, 1), text: String(y) }))];
+/**
+ * Ruler ticks and labels for a zoom level, given in pixels per month. Like Diffusion Studio's ruler,
+ * the interval tightens as you zoom in: a tall tick and the year each January, then quarter ticks,
+ * then month ticks, with month names once there is room for them. Positions are in timeline months.
+ */
+export function rulerMarks(pxPerMonth: number): RulerMarks {
+  const tickStep = pxPerMonth >= 10 ? 1 : 3;
+  const labelStep = pxPerMonth >= 32 ? 1 : pxPerMonth >= 16 ? 3 : 0;
+  const ticks: RulerMarks["ticks"] = [{ at: 0, major: true }];
+  const labels: RulerMarks["labels"] = [{ at: 0, text: "INTRO", minor: false }, ...YEARS.map((y) => ({ at: at(y, 1), text: String(y), minor: false }))];
+  for (let m = 0; m < SPAN_MONTHS; m += tickStep) {
+    ticks.push({ at: INTRO + m, major: m % 12 === 0 });
+    if (labelStep && m % 12 !== 0 && m % labelStep === 0) labels.push({ at: INTRO + m, text: monthLabel(INTRO + m).slice(0, 3), minor: true });
+  }
+  return { ticks, labels };
+}

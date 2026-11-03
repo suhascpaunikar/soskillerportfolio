@@ -67,6 +67,22 @@ const PATHS = {
       fill="currentColor"
     />
   ),
+  minus: (
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M7.25 12.5C7.25 12.2239 7.4739 12 7.75 12H17.25C17.5261 12 17.75 12.2239 17.75 12.5C17.75 12.7761 17.5261 13 17.25 13H7.75C7.4739 13 7.25 12.7761 7.25 12.5Z"
+      fill="currentColor"
+    />
+  ),
+  plus: (
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M13 7.75C13 7.4739 12.7761 7.25 12.5 7.25C12.2239 7.25 12 7.4739 12 7.75V12H7.75C7.4739 12 7.25 12.2239 7.25 12.5C7.25 12.7761 7.4739 13 7.75 13H12V17.25C12 17.5261 12.2239 17.75 12.5 17.75C12.7761 17.75 13 17.5261 13 17.25V13H17.25C17.5261 13 17.75 12.7761 17.75 12.5C17.75 12.2239 17.5261 12 17.25 12H13V7.75Z"
+      fill="currentColor"
+    />
+  ),
 } as const;
 
 export type IconName = keyof typeof PATHS;
