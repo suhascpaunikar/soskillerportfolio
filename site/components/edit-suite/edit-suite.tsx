@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useMediaQuery, usePrefersReducedMotion } from "@/hooks/use-media-query";
 import { EMAIL, TOTAL, clamp, frameAt, nextStart, prevStart, type Frame } from "@/lib/career";
@@ -76,6 +76,25 @@ export function EditSuite() {
     if (pos >= TOTAL) setPos(0);
     setPlaying(true);
   }, [running, pos]);
+
+  // Space plays and pauses the reel from anywhere on the page, as in an editor.
+  const togglePlayRef = useRef(togglePlay);
+  useEffect(() => {
+    togglePlayRef.current = togglePlay;
+  });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== " " || e.defaultPrevented || e.repeat || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      const target = e.target instanceof Element ? e.target : null;
+      // Leave Space alone where it types or belongs to an open dialog.
+      if (target?.closest("textarea, select, [contenteditable=''], [contenteditable='true'], dialog[open]")) return;
+      if (target instanceof HTMLInputElement && target.type !== "range") return;
+      e.preventDefault();
+      togglePlayRef.current();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const copyEmail = useCallback(() => {
     navigator.clipboard?.writeText(EMAIL).catch(() => undefined);

@@ -32,7 +32,7 @@ The files land in `out/`. Setting `PAGES_BASE_PATH` turns on static export and t
 
 ## What's here
 
-- `/` is the home page, an edit suite.
+- `/` is the home page, an edit suite. Space plays and pauses the reel from anywhere on the page.
   - **Desktop:** a program monitor and a timeline that runs by year. The timeline has three layers: experiments on top, work in the middle, companies at the bottom. Drag along the year ruler to scrub; the monitor cross-dissolves layer by layer. Click a clip to open its page.
   - **Highlighted clips:** the two finished case studies (Pickup in store, AI progressive measurements) carry a "Case study" tag, and they, Lenskart and every experiment get a brighter fill. Set `caseStudy` on a work item or `focus` on a company in `lib/career.ts` to change which.
   - **Zoom:** pinch to zoom the timeline (two fingers on touch screens, trackpad pinch, or Ctrl/⌘ + scroll). On desktop there are also − / % / + buttons and the + − 0 keys; a plain mouse wheel pans a zoomed timeline. The ruler adds month ticks and names as you zoom in.

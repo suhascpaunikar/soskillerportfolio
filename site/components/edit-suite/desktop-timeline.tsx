@@ -147,7 +147,7 @@ export function DesktopTimeline({ suite }: { suite: Suite }) {
             className="text-playhead"
             onClick={suite.togglePlay}
             aria-label={running ? "Pause the reel" : "Play the reel"}
-            title={`${running ? "Pause" : "Play"} the reel (K)`}
+            title={`${running ? "Pause" : "Play"} the reel (Space or K)`}
           >
             {running ? <Pause className="size-3.5 fill-current" aria-hidden="true" /> : <Play className="size-3.5 fill-current" aria-hidden="true" />}
           </Button>
