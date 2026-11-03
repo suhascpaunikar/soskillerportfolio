@@ -11,7 +11,7 @@ import { INTRO, TOTAL, companies, companyName, dateAt, describe, experiments, pc
 import { cn } from "@/lib/utils";
 
 import { ClipLabel } from "./clip-label";
-import { CLIP_CLASS, INTRO_STYLE, LANE_BG, PLAYHEAD_FLAG, WAVE, clipStyle, rulerMarks } from "./clip-styles";
+import { CLIP_CLASS, INTRO_STYLE, LANE_BG, PLAYHEAD_FLAG, clipStyle, rulerMarks } from "./clip-styles";
 import type { LayerKey, Suite } from "./edit-suite";
 
 const ROWS: Array<{ key: LayerKey; name: string; color: string; height: number }> = [
@@ -318,9 +318,6 @@ export function DesktopTimeline({ suite }: { suite: Suite }) {
                     className={cn(CLIP_CLASS, "top-1 h-10 rounded-lg")}
                     style={{ ...place(c), ...clipStyle("co", { focus: c.focus, live: live.co === c.id }) }}
                   >
-                    <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true" className="absolute bottom-0.5 left-1 h-3 w-[calc(100%-8px)]">
-                      <path d={WAVE} fill="none" stroke="#a7ebc8" strokeWidth={1} strokeOpacity={0.35} vectorEffect="non-scaling-stroke" />
-                    </svg>
                     <ClipLabel label={c.name} sub={c.sub} />
                   </Link>
                 ))}

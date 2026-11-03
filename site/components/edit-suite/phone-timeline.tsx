@@ -8,7 +8,7 @@ import { INTRO, TOTAL, clamp, companies, companyName, dateAt, experiments, range
 import { cn } from "@/lib/utils";
 
 import { ClipLabel } from "./clip-label";
-import { CLIP_CLASS, INTRO_STYLE, LANE_BG, PLAYHEAD_FLAG, WAVE, clipStyle, rulerMarks } from "./clip-styles";
+import { CLIP_CLASS, INTRO_STYLE, LANE_BG, PLAYHEAD_FLAG, clipStyle, rulerMarks } from "./clip-styles";
 import type { Suite } from "./edit-suite";
 
 /** Pixels per month at the default zoom, and the most a pinch can zoom in. */
@@ -265,9 +265,6 @@ export function PhoneTimeline({ suite }: { suite: Suite }) {
                       className={cn(CLIP_CLASS, "top-0.5 h-10 cursor-pointer rounded-lg p-0")}
                       style={{ ...place(c), ...clipStyle("co", { focus: c.focus, live: live.co === c.id }) }}
                     >
-                      <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true" className="absolute bottom-0.5 left-1 h-3 w-[calc(100%-8px)]">
-                        <path d={WAVE} fill="none" stroke="#a7ebc8" strokeWidth={1} strokeOpacity={0.35} vectorEffect="non-scaling-stroke" />
-                      </svg>
                       <ClipLabel label={c.name} sub={c.sub} />
                     </button>
                   ))}

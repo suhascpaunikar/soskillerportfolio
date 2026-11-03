@@ -6,14 +6,17 @@ import { INTRO, SPAN_MONTHS, YEARS, at, monthLabel } from "@/lib/career";
 const RIM =
   "conic-gradient(from 210deg at 50% 50%, #f4f4f6 0deg, #77777f 45deg, #e8e8ee 95deg, #2c2c32 150deg, #ffe1e1 185deg, #c9d3ff 215deg, #3a3a42 265deg, #ededf2 320deg, #f4f4f6 360deg)";
 
-const body = (top: string, bottom: string) => `linear-gradient(180deg, ${top} 0%, ${bottom} 100%) padding-box, ${RIM} border-box`;
+const body = (top: string, bottom: string, rim: string = RIM) => `linear-gradient(180deg, ${top} 0%, ${bottom} 100%) padding-box, ${rim} border-box`;
+
+/** Highlighted clips get a bright rim, white at the top fading into the layer's colour. */
+const brightRim = (tint: string) => `linear-gradient(180deg, #ffffff 0%, ${tint} 100%)`;
 
 export type Layer = "exp" | "work" | "co";
 
 const LAYER = {
-  exp: { fill: body("#7b45d9", "#4a1f96"), focus: body("#9a66ff", "#5a2cbc"), glow: "rgba(154,102,255,0.5)" },
-  work: { fill: body("#4954c8", "#252e84"), focus: body("#6b78f5", "#3442b4"), glow: "rgba(107,120,245,0.5)" },
-  co: { fill: body("#25905d", "#125235"), focus: body("#36b878", "#18704a"), glow: "rgba(54,184,120,0.45)" },
+  exp: { fill: body("#7b45d9", "#4a1f96"), focus: body("#a874ff", "#6a34d6", brightRim("#c9adff")), glow: "rgba(168,116,255,0.7)" },
+  work: { fill: body("#4954c8", "#252e84"), focus: body("#7584ff", "#3b4bd0", brightRim("#b7c0ff")), glow: "rgba(117,132,255,0.7)" },
+  co: { fill: body("#25905d", "#125235"), focus: body("#3dcc86", "#1a8152", brightRim("#9df0c6")), glow: "rgba(61,204,134,0.6)" },
 } as const;
 
 export const CLIP_SHADOW = "inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 6px rgba(0,0,0,0.5)";
@@ -24,11 +27,11 @@ export const CLIP_CLASS =
 
 /**
  * A clip's fill and shadow. Highlighted clips (the case studies, their company, the experiments) get a
- * brighter fill and a glow; the clip under the playhead gets a yellow ring in the playhead's colour.
+ * brighter fill, a bright rim and a strong glow; the clip under the playhead gets a yellow ring in the playhead's colour.
  */
 export function clipStyle(layer: Layer, { focus = false, live = false }: { focus?: boolean; live?: boolean } = {}): CSSProperties {
   const c = LAYER[layer];
-  const shadows = [live ? "0 0 0 2px var(--color-playhead)" : null, focus ? `0 0 14px ${c.glow}` : null, CLIP_SHADOW].filter(Boolean);
+  const shadows = [live ? "0 0 0 2px var(--color-playhead)" : null, focus ? `0 0 18px 2px ${c.glow}` : null, CLIP_SHADOW].filter(Boolean);
   return { background: focus ? c.focus : c.fill, boxShadow: shadows.join(", ") };
 }
 
@@ -42,17 +45,6 @@ export const LANE_BG = {
   work: { background: "rgba(90,102,224,0.07)", boxShadow: "inset 0 2px 6px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(90,102,224,0.22)" },
   co: { background: "rgba(47,163,107,0.07)", boxShadow: "inset 0 2px 6px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(47,163,107,0.22)" },
 } as const;
-
-/** A fake audio waveform drawn on the company clips. */
-export const WAVE = (() => {
-  let d = "";
-  for (let i = 1; i < 200; i += 2.5) {
-    const a = Math.abs(Math.sin(i * 0.37) * 0.55 + Math.sin(i * 0.13 + 1.3) * 0.45);
-    const h = 1 + a * 7.5;
-    d += `M${i.toFixed(1)} ${(10 - h).toFixed(1)}V${(10 + h).toFixed(1)}`;
-  }
-  return d;
-})();
 
 /** The playhead's flag, 14×16, pointing down onto the timeline. */
 export const PLAYHEAD_FLAG = "M1 1h12v8l-6 6-6-6z";
