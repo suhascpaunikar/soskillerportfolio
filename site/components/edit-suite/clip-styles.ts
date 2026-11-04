@@ -8,15 +8,17 @@ const RIM =
 
 const body = (top: string, bottom: string, rim: string = RIM) => `linear-gradient(180deg, ${top} 0%, ${bottom} 100%) padding-box, ${rim} border-box`;
 
-/** Highlighted clips get a bright rim, white at the top fading into the layer's colour. */
-const brightRim = (tint: string) => `linear-gradient(180deg, #ffffff 0%, ${tint} 100%)`;
-
 export type Layer = "exp" | "work" | "co";
 
+/**
+ * Two treatments per layer, told apart by colour and contrast rather than effects:
+ * the main clips (case studies, their company, the experiments) are light and vivid with dark text;
+ * the rest are muted, darker shades of the layer colour with softer text.
+ */
 const LAYER = {
-  exp: { fill: body("#7b45d9", "#4a1f96"), focus: body("#a874ff", "#6a34d6", brightRim("#c9adff")), glow: "rgba(168,116,255,0.7)" },
-  work: { fill: body("#4954c8", "#252e84"), focus: body("#7584ff", "#3b4bd0", brightRim("#b7c0ff")), glow: "rgba(117,132,255,0.7)" },
-  co: { fill: body("#25905d", "#125235"), focus: body("#3dcc86", "#1a8152", brightRim("#9df0c6")), glow: "rgba(61,204,134,0.6)" },
+  exp: { muted: body("#3a2a66", "#2c1f52"), mutedInk: "#cbbcf2", main: body("#cdbbff", "#a98cf8"), mainInk: "#170c33" },
+  work: { muted: body("#2b3068", "#20244f"), mutedInk: "#b4b9e6", main: body("#b3bcff", "#8a97f8"), mainInk: "#0e1238" },
+  co: { muted: body("#1f4a35", "#163626"), mutedInk: "#a6d4bb", main: body("#86e8b4", "#52cb8c"), mainInk: "#052415" },
 } as const;
 
 export const CLIP_SHADOW = "inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 6px rgba(0,0,0,0.5)";
@@ -25,14 +27,15 @@ export const CLIP_SHADOW = "inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 6px rgba
 export const CLIP_CLASS =
   "clip absolute box-border flex items-center overflow-hidden border-[1.5px] border-transparent text-left text-white no-underline [text-shadow:0_1px_1px_rgba(0,0,0,0.55)] outline-offset-2 focus-visible:outline-2 focus-visible:outline-playhead";
 
-/**
- * A clip's fill and shadow. Highlighted clips (the case studies, their company, the experiments) get a
- * brighter fill, a bright rim and a strong glow; the clip under the playhead gets a yellow ring in the playhead's colour.
- */
+/** A clip's fill, text colour and shadow. The clip under the playhead also gets a yellow ring in the playhead's colour. */
 export function clipStyle(layer: Layer, { focus = false, live = false }: { focus?: boolean; live?: boolean } = {}): CSSProperties {
   const c = LAYER[layer];
-  const shadows = [live ? "0 0 0 2px var(--color-playhead)" : null, focus ? `0 0 18px 2px ${c.glow}` : null, CLIP_SHADOW].filter(Boolean);
-  return { background: focus ? c.focus : c.fill, boxShadow: shadows.join(", ") };
+  return {
+    background: focus ? c.main : c.muted,
+    color: focus ? c.mainInk : c.mutedInk,
+    textShadow: focus ? "none" : undefined,
+    boxShadow: live ? `0 0 0 2px var(--color-playhead), ${CLIP_SHADOW}` : CLIP_SHADOW,
+  };
 }
 
 export const INTRO_STYLE = (live: boolean): CSSProperties => ({

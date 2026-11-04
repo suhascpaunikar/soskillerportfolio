@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils";
 
-/** The "Case study" tag: a small white label that stands out on the blue work clips. */
-export function CaseStudyBadge({ className }: { className?: string }) {
+/** The "Case study" tag: white on dark backgrounds (the monitor), dark on the light case-study clips. */
+export function CaseStudyBadge({ tone = "light", className }: { tone?: "light" | "dark"; className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex h-[15px] w-fit max-w-full shrink-0 items-center overflow-hidden whitespace-nowrap rounded-[4px] bg-white px-1.5 font-mono text-[8.5px] font-bold uppercase leading-none tracking-[0.06em] text-[#1b2170] [text-shadow:none]",
+        "inline-flex h-[15px] w-fit max-w-full shrink-0 items-center overflow-hidden whitespace-nowrap rounded-[4px] px-1.5 font-mono text-[8.5px] font-bold uppercase leading-none tracking-[0.06em] [text-shadow:none]",
+        tone === "light" ? "bg-white text-[#1b2170]" : "bg-[#0e1238] text-white",
         className,
       )}
     >
@@ -22,7 +23,7 @@ export function ClipLabel({ eyebrow, label, sub, caseStudy = false }: { eyebrow?
   return (
     <span className="relative flex min-w-0 flex-col justify-center gap-[3px] px-[9px]">
       {caseStudy ? (
-        <CaseStudyBadge />
+        <CaseStudyBadge tone="dark" />
       ) : (
         eyebrow && <span className="truncate text-[9px] font-semibold uppercase leading-none tracking-[0.05em] opacity-80">{eyebrow}</span>
       )}
