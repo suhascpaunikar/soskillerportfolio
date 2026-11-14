@@ -3,12 +3,12 @@
 import { Clapperboard, CircleUser, Clock, FileText, FlaskConical, Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import Link from "next/link";
 
+import { Identity } from "@/components/site/identity";
 import { Button } from "@/components/ui/button";
 import { TOTAL } from "@/lib/career";
 import { cn } from "@/lib/utils";
 
 import { Cta } from "./cta";
-import { Identity } from "./desktop-suite";
 import type { Suite } from "./edit-suite";
 import { Monitor } from "./monitor";
 import { PhoneTimeline } from "./phone-timeline";

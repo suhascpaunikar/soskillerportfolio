@@ -38,7 +38,19 @@ The files land in `out/`. Setting `PAGES_BASE_PATH` turns on static export and t
   - **Zoom:** pinch to zoom the timeline (two fingers on touch screens, trackpad pinch, or Ctrl/⌘ + scroll). On desktop there are also − / % / + buttons and the + − 0 keys; a plain mouse wheel pans a zoomed timeline. The ruler adds month ticks and names as you zoom in.
   - **Phone:** the same three layers, filling the strip edge to edge. Swiping scrubs: the playhead travels from the left edge at the intro to the right edge at "now", while the timeline scrolls with it. Drag along the ruler to put the playhead under your finger.
 - `/playground` holds the 21st.dev Liquid Metal Button demo. The liquid metal is off everywhere else for now.
-- `/work/pickup-in-store`, `/work/ai-progressive-measurements`, `/lab`, `/about`, `/now` and `/resume` are placeholders until those pages are built.
+- `/work/pickup-in-store` and `/work/ai-progressive-measurements` are the two case studies (see below).
+- `/lab`, `/about`, `/now` and `/resume` are placeholders until those pages are built.
+
+## Case studies
+
+Both case studies are content files rendered by one template, so they share a skeleton: title card, the 30-second cut, chapters, credits, next feature.
+
+- **Content:** `lib/case-studies/pickup-in-store.ts` and `lib/case-studies/ai-progressive-measurements.ts`. The shape is documented in `lib/case-studies/types.ts`. Chapter labels ("Rough cut", "Box office") and headings are one string each.
+- **Pictures:** every picture is a `shot`. Until it has a `src`, the page shows a placeholder that says "This image will come here" (or "This video will come here"), with what belongs there (`label`) and where it is today (`source`). To fill a slot, put the file in `public/work/<slug>/` and add `src: "/work/<slug>/cart.png"` to that shot; set `ratio` to match the picture. A video takes a path too, plus an optional `poster`.
+- **To add:** blocks of type `todo` show as dashed "To add" notes. They mark things only Suhas can supply (customer quotes, the period behind the numbers, what he would do differently). Replace each with a `text` block, or delete it.
+- **Dates** come from the matching clip in `lib/career.ts` (`workId`), so they are edited in one place.
+- **Template:** `components/case-study/` (page, blocks, picture slot, chapter list). The header and footer shared with future pages are in `components/site/`.
+- **A third study:** add a content file, list it in `lib/case-studies/index.ts`, and add a route in `app/work/<slug>/page.tsx` like the existing two.
 
 ## Structure
 
