@@ -12,8 +12,9 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-[#1e1e22]">
       <div className="mx-auto flex max-w-[1280px] flex-col gap-6 px-4 py-10 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
-        <Link href="/" aria-label="Suhas Paunikar, home" className="w-fit rounded-lg no-underline outline-offset-4 focus-visible:outline-2 focus-visible:outline-playhead">
+        <Link href="/" className="w-fit rounded-lg no-underline outline-offset-4 focus-visible:outline-2 focus-visible:outline-playhead">
           <Identity />
+          <span className="sr-only">, home</span>
         </Link>
         <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2.5">
           {NAV.map((item) => (

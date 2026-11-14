@@ -13,7 +13,8 @@ Research, references and structure for redoing [suhaspaunikar.framer.website](ht
   - **Scrubbing:** drag along the years and the monitor cross-dissolves layer by layer. Click a clip to open its page.
   - **Phone:** the playhead stays fixed in the middle and you swipe the timeline under it.
   - **Buttons:** Hire me, Play and the main button use the 21st.dev Liquid Metal Button shader, as do the rings that follow the clip under the playhead.
-  - **Other pages** (case studies, Lab, About, Now, Résumé) are placeholders for now.
+  - **Case studies:** Pickup in store and AI progressive measurements are built, with placeholders where the pictures will go.
+  - **Other pages** (Lab, About, Now, Résumé) are placeholders for now.
 - **Wireframes:** https://claude.ai/artifact/5uejqo3LrvrWH5CeczA2Qw (private design canvas). It has the home (desktop and phone, in plastic and liquid-metal versions), both case studies, About, Lab, Now, Résumé, a 404 and the shared components.
 - **Still open:**
   - real dates for the Lenskart projects and the experiments (marked ≈);

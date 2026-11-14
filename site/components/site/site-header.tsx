@@ -20,8 +20,9 @@ export function SiteHeader({ title, section = "/" }: { title: string; section?: 
         <p className="m-0 min-w-0 flex-1 truncate text-center font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-soft lg:hidden">{title}</p>
         <span aria-hidden="true" className="size-9 shrink-0 lg:hidden" />
 
-        <Link href="/" aria-label="Suhas Paunikar, home" className="hidden rounded-lg no-underline outline-offset-4 focus-visible:outline-2 focus-visible:outline-playhead lg:block">
+        <Link href="/" className="hidden rounded-lg no-underline outline-offset-4 focus-visible:outline-2 focus-visible:outline-playhead lg:block">
           <Identity />
+          <span className="sr-only">, home</span>
         </Link>
         <PrimaryNav current={section} exact={false} className="hidden lg:flex" />
       </div>
