@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
 
-import { ComingSoon } from "@/components/coming-soon";
+import { CaseStudyPage } from "@/components/case-study/case-study";
+import { pickup } from "@/lib/case-studies";
 
-export const metadata: Metadata = { title: "Pickup in store" };
+export const metadata: Metadata = {
+  title: pickup.meta.title,
+  description: pickup.meta.description,
+  openGraph: { type: "article", title: pickup.meta.title, description: pickup.meta.description },
+};
 
 export default function Page() {
-  return (
-    <ComingSoon
-      eyebrow="CASE STUDY · LENSKART"
-      title="Pickup in store"
-      line="Buy online, pick up in store: the first version cost conversions; the second shrank the choice to two lines on the cart. 23% of online orders, 2.5× fewer returns."
-    />
-  );
+  return <CaseStudyPage study={pickup} />;
 }

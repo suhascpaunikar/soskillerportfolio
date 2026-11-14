@@ -157,6 +157,27 @@
   display: none;
 }
 
+/* Inside pages: a playhead under the header that tracks how far down the page the reader is.
+   It is drawn by the scroll position itself, so it only appears where the browser supports that. */
+.scroll-playhead {
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+@supports (animation-timeline: scroll()) {
+  .scroll-playhead {
+    animation: scroll-playhead linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+@keyframes scroll-playhead {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 dialog::backdrop {
   background: rgb(5 5 7 / 0.72);
 }

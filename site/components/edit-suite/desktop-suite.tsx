@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-
+import { Identity } from "@/components/site/identity";
+import { PrimaryNav } from "@/components/site/primary-nav";
 import { dateAt, rangeOf } from "@/lib/career";
 import { cn } from "@/lib/utils";
 
@@ -10,29 +10,6 @@ import { Cta } from "./cta";
 import { DesktopTimeline } from "./desktop-timeline";
 import type { Suite } from "./edit-suite";
 import { Monitor } from "./monitor";
-
-export const NAV = [
-  { href: "/", label: "Work" },
-  { href: "/lab", label: "Lab" },
-  { href: "/about", label: "About" },
-  { href: "/now", label: "Now" },
-  { href: "/resume", label: "Résumé" },
-];
-
-/** Avatar, name and status, top left. */
-export function Identity({ compact = false }: { compact?: boolean }) {
-  return (
-    <div className="flex min-w-0 items-center gap-2.5">
-      <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#2e2e34] bg-raised font-mono text-[10px] font-semibold text-soft">
-        SP
-      </span>
-      <div className="min-w-0">
-        <p className={cn("m-0 truncate font-semibold leading-tight text-white", compact ? "text-[15px]" : "text-sm")}>Suhas Paunikar</p>
-        <p className="m-0 mt-0.5 truncate text-[11px] leading-tight text-muted-foreground">Product designer · open to roles</p>
-      </div>
-    </div>
-  );
-}
 
 export function DesktopSuite({ suite, className }: { suite: Suite; className?: string }) {
   const { frame, hidden } = suite;
@@ -45,24 +22,7 @@ export function DesktopSuite({ suite, className }: { suite: Suite; className?: s
     <div className={cn("relative h-dvh min-h-[700px] flex-col overflow-hidden bg-app", className)}>
       <header className="flex h-[60px] shrink-0 items-center justify-between gap-4 border-b border-[#1e1e22] px-5">
         <Identity />
-        <nav aria-label="Primary" className="flex items-center gap-0.5 rounded-full bg-[#0a0a0c] p-[3px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.7),inset_0_0_0_1px_#000,0_1px_0_rgba(255,255,255,0.06)]">
-          {NAV.map((item) => {
-            const current = item.href === "/";
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={current ? "page" : undefined}
-                className={cn(
-                  "flex h-[34px] items-center rounded-full border px-3.5 text-[13px] no-underline transition-colors",
-                  current ? "border-white/[0.16] bg-[linear-gradient(180deg,#202020_0%,#000_100%)] font-semibold text-white" : "border-transparent font-medium text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <PrimaryNav current="/" />
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col items-center gap-3 px-7 pb-3.5 pt-4">
