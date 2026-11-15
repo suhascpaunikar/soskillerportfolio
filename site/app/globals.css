@@ -73,6 +73,20 @@
   --color-work-ink: #aeb6ff;
   --color-co: #2fa36b;
 
+  /* Home page (v2) tokens: warm near-black, paper, one orange and one blue. */
+  --font-figtree: "Figtree Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #111010;
+  --color-band: #1f1e1e;
+  --color-umber: #272320;
+  --color-stone: #443f3d;
+  --color-paper: #eaeae6;
+  --color-paper-2: #f4f3f0;
+  --color-flame: #ff6600;
+  --color-cobalt: #383dd9;
+  --color-azure: #1454ed;
+  --color-sand: #cdb09b;
+  --color-sky: #a9c9e8;
+
   --text-xxs: 10px;
   --color-timeline: #141416;
   --color-tick: #34343a;
@@ -188,6 +202,74 @@ dialog::backdrop {
     transition: none;
   }
   .metal:active {
+    transform: none;
+  }
+}
+
+/* ───── Home page (v2) ───── */
+
+/* Paper grain over a coloured surface. The surface needs `relative` and its own background. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.22;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.grain-soft::after {
+  opacity: 0.12;
+}
+.grain-light::after {
+  mix-blend-mode: screen;
+  opacity: 0.1;
+  filter: invert(1);
+}
+
+/* Faint rows of frame and cursor glyphs behind the hero, fading out towards the bottom. */
+.glyph-field {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='212' height='140' fill='none' stroke='%23fff' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg opacity='.075'%3E%3Crect x='20' y='22' width='30' height='22' rx='2'/%3E%3Cpath d='M20 29h30M26 22l-3 7M34 22l-3 7M42 22l-3 7'/%3E%3Cpath d='M128 20l5 24 5-9 9-3z'/%3E%3Cpath d='M74 92l5 24 5-9 9-3z'/%3E%3Crect x='170' y='92' width='30' height='22' rx='2'/%3E%3Cpath d='M170 99h30M176 92l-3 7M184 92l-3 7M192 92l-3 7'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: linear-gradient(180deg, #000 0%, #000 45%, transparent 100%);
+}
+
+/* The line that fills while a work item is on screen. */
+@keyframes v2-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.v2-fill {
+  transform-origin: 0 50%;
+  animation: v2-fill linear both;
+}
+@keyframes v2-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.v2-rise {
+  animation: v2-rise 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.v2 ::selection {
+  background: #ff660066;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-fill,
+  .v2-rise {
+    animation: none;
+  }
+  .v2-fill {
     transform: none;
   }
 }
