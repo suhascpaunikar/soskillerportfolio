@@ -20,7 +20,7 @@ export function Lab() {
             <Btn href="/lab" tone="white" arrow>
               Open the lab
             </Btn>
-            <Btn href="/reel" tone="ghost">
+            <Btn href="/" tone="ghost">
               Play the reel
             </Btn>
           </div>

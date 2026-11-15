@@ -14,7 +14,8 @@ export const NAV = [
   { href: "#backstory", label: "Backstory" },
   { href: "#lab", label: "Lab" },
   { href: "/about", label: "About" },
-  { href: "/now", label: "Now" },
+  { href: "/", label: "V1" },
+  { href: "/v3", label: "V3" },
 ] as const;
 
 export function Header() {
@@ -22,7 +23,7 @@ export function Header() {
   return (
     <header className="relative z-20">
       <div className={cn(CONTAINER, "flex h-16 items-center justify-between gap-6")}>
-        <Link href="/" className={cn("flex items-center gap-2 rounded-md text-white no-underline", FOCUS)}>
+        <Link href="/v2" className={cn("flex items-center gap-2 rounded-md text-white no-underline", FOCUS)}>
           <Mark className="size-7" />
           <span className="text-2xl font-medium leading-none tracking-[-0.02em]">Suhas Paunikar</span>
         </Link>

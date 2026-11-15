@@ -11,7 +11,7 @@ import { Work } from "./work";
 
 /**
  * The home page (v2): one long page on a warm near-black, set in Figtree with JetBrains Mono labels.
- * The earlier home, the edit suite, lives on at /reel.
+ * It lives at /v2; the edit suite stays at / and a third take is at /v3.
  */
 export function Home() {
   return (

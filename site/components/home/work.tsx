@@ -18,7 +18,7 @@ const ITEMS = ORDER.map((id) => work.find((w) => w.id === id)).filter((w): w is 
 const MONO_XS = "font-mono text-[11px] uppercase leading-none tracking-[0.02em]";
 
 /** The shipped cart: the whole pickup choice is two lines above the pay button. */
-function CartArt() {
+export function CartArt() {
   const row = "flex items-center gap-3 rounded-md border px-3.5 py-3";
   return (
     <div className="w-full max-w-[340px] rounded-lg border border-white/[0.16] bg-ink/70 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.35)]">
@@ -41,7 +41,7 @@ function CartArt() {
 }
 
 /** Placing a pupil marker with the zoomed-in view, AI and manual values side by side. */
-function MarkerArt() {
+export function MarkerArt() {
   return (
     <div className="w-full max-w-[340px] rounded-lg border border-white/[0.16] bg-ink/70 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.35)]">
       <p className={cn("m-0 mb-3.5 text-white/50", MONO_XS)}>iPad · align the pupil marker</p>

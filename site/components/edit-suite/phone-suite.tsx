@@ -1,6 +1,6 @@
 "use client";
 
-import { Clapperboard, CircleUser, Clock, FileText, FlaskConical, Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { Clapperboard, CircleUser, Clock, FileText, FlaskConical, Layers, Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import Link from "next/link";
 
 import { Identity } from "@/components/site/identity";
@@ -19,6 +19,8 @@ const TABS = [
   { href: "/about", label: "About", Icon: CircleUser },
   { href: "/now", label: "Now", Icon: Clock },
   { href: "/resume", label: "Résumé", Icon: FileText },
+  { href: "/v2", label: "V2", Icon: Layers },
+  { href: "/v3", label: "V3", Icon: Layers },
 ];
 
 export function PhoneSuite({ suite, className }: { suite: Suite; className?: string }) {

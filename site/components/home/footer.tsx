@@ -6,10 +6,11 @@ import { cn } from "@/lib/utils";
 import { CONTAINER, FOCUS, Mark, T } from "./ui";
 
 const LINKS = [
-  { href: "/#work", label: "Work" },
-  { href: "/#backstory", label: "Backstory" },
+  { href: "/v2#work", label: "Work" },
+  { href: "/v2#backstory", label: "Backstory" },
   { href: "/lab", label: "Lab" },
-  { href: "/reel", label: "The reel" },
+  { href: "/", label: "V1 · the reel" },
+  { href: "/v3", label: "V3" },
   { href: "/about", label: "About" },
   { href: "/now", label: "Now" },
   { href: "/resume", label: "Résumé" },
@@ -26,7 +27,7 @@ export function Footer() {
   return (
     <footer className={cn(CONTAINER, "pb-16 pt-20")}>
       <div className="flex flex-col justify-between gap-14 lg:flex-row">
-        <Link href="/" className={cn("flex h-fit w-fit items-center gap-3 rounded-md text-white no-underline", FOCUS)}>
+        <Link href="/v2" className={cn("flex h-fit w-fit items-center gap-3 rounded-md text-white no-underline", FOCUS)}>
           <Mark className="size-11 lg:size-[52px]" />
           <span className="text-[40px] font-medium leading-none tracking-[-0.03em] lg:text-[52px]">Suhas Paunikar</span>
         </Link>
