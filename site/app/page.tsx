@@ -1,5 +1,5 @@
-import { EditSuite } from "@/components/edit-suite/edit-suite";
+import { Home } from "@/components/home/home";
 
-export default function Home() {
-  return <EditSuite />;
+export default function Page() {
+  return <Home />;
 }

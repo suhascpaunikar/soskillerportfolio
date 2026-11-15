@@ -8,7 +8,10 @@ Research, references and structure for redoing [suhaspaunikar.framer.website](ht
 
 - **Direction (2 Nov 2026): Director's Cut.**
 - **Platform (2 Nov 2026): code, in this repo.** The site lives in [`site/`](site/): Next.js 16, TypeScript, Tailwind CSS v4 and the shadcn/ui structure. To run it: `cd site && npm install && npm run dev`.
-- **Built so far:** the home page, desktop and phone.
+- **Home page, version 2 (15 Nov 2026):** a long scrolling page modelled on the design system of [agentmail.to](https://www.agentmail.to/): warm near-black, paper panels, one orange and one blue, Figtree (standing in for Aeonik) with JetBrains Mono labels. It lives in [`site/components/home/`](site/components/home/). The edit suite described below moved to `/reel`.
+  - **Type scale:** 56 / 40 / 32 / 24 / 20 / 16 / 14px, all at regular weight with -1% tracking; buttons are 32px high with a 6px radius.
+  - **Sections:** hero (the three careers as a stacked slate), brands, work list, backstory tabs, measured results and the two case studies, lab, how I work, contact, footer.
+- **Built before that:** the edit-suite home page (now at `/reel`), desktop and phone.
   - **Desktop:** an edit suite: a program monitor and a timeline that runs by year. The intro comes first, then three layers: companies at the bottom, the work done there in the middle, and experiments from the same period on top.
   - **Scrubbing:** drag along the years and the monitor cross-dissolves layer by layer. Click a clip to open its page.
   - **Phone:** the playhead stays fixed in the middle and you swipe the timeline under it.
@@ -55,8 +58,9 @@ References with "what to steal" → [`04-references.md`](research/04-references.
 ```
 README.md                          ← you are here
 site/                              the portfolio in code (Next.js 16 · TypeScript · Tailwind · shadcn)
-  app/                             routes: / (the edit suite), /playground, placeholders for the other pages
-  components/edit-suite/           the home page: monitor, timelines, export dialog
+  app/                             routes: / (home, version 2), /reel (the edit suite), /playground, placeholders for the other pages
+  components/home/                 the home page, version 2: one file per section, shared type scale in ui.tsx
+  components/edit-suite/           the earlier home page, now /reel: monitor, timelines, export dialog
   components/ui/                   the 21st.dev Liquid Metal Button (patched) and the shared liquid-metal module
   lib/career.ts                    timeline data: companies, work, experiments and dates
 research/
