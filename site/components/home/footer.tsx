@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/lab", label: "Lab" },
   { href: "/", label: "V1 · the reel" },
   { href: "/v3", label: "V3" },
+  { href: "/v4", label: "V4" },
   { href: "/about", label: "About" },
   { href: "/now", label: "Now" },
   { href: "/resume", label: "Résumé" },

@@ -32,6 +32,7 @@ const VERSIONS = [
   { href: "/", label: "V1" },
   { href: "/v2", label: "V2" },
   { href: "/v3", label: "V3" },
+  { href: "/v4", label: "V4" },
 ];
 
 function Versions({ className }: { className?: string }) {
