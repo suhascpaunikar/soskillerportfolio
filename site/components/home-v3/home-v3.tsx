@@ -6,6 +6,7 @@ import { Btn, Mark, btn } from "@/components/home/ui";
 import { CartArt, MarkerArt } from "@/components/home/work";
 import { EMAIL, TOTAL, at, companies, experiments, rangeOf, work, type CompanyId } from "@/lib/career";
 import { measurements, pickup } from "@/lib/case-studies";
+import { AI_WORKFLOW, BEFORE, TITLE } from "@/lib/profile";
 import { cn } from "@/lib/utils";
 
 import { VersionSwitch } from "@/components/versions/switch";
@@ -14,8 +15,8 @@ import { CopyEmail } from "./copy-email";
 
 /**
  * The home page, third take. It borrows a mood from agentmail.to (warm neutrals, one orange,
- * mono labels, grain) and nothing else: the page is paper, the type is large, and the career
- * runs across it as a strip of film.
+ * mono labels, grain) and nothing else: the page is paper, the introduction is a plain first-person
+ * paragraph set large, and the product design years run across it as a strip.
  */
 
 const WRAP = "mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-12";
@@ -25,7 +26,7 @@ const DISPLAY = "font-normal leading-[0.94] tracking-[-0.035em]";
 
 const NAV = [
   { href: "#work", label: "Work" },
-  { href: "#backstory", label: "Backstory" },
+  { href: "#approach", label: "How I work" },
   { href: "#lab", label: "Lab" },
   { href: "/about", label: "About" },
 ];
@@ -35,7 +36,7 @@ function Header() {
     <header className={cn(WRAP, "flex h-[72px] items-center justify-between gap-4")}>
       <Link href="/v3" className={cn("flex items-center gap-2 rounded text-ink no-underline", FOCUS)}>
         <Mark className="size-6 text-flame" />
-        <span className="text-xl font-medium leading-none tracking-[-0.02em]">Suhas Paunikar</span>
+        <span className="whitespace-nowrap text-xl font-medium leading-none tracking-[-0.02em]">Suhas Paunikar</span>
       </Link>
       <nav aria-label="Primary" className="hidden items-center gap-7 md:flex">
         {NAV.map((n) => (
@@ -46,7 +47,7 @@ function Header() {
       </nav>
       <div className="flex items-center gap-2">
         <VersionSwitch current="/v3" />
-        <Btn href={`mailto:${EMAIL}`} tone="ink" arrow>
+        <Btn href={`mailto:${EMAIL}`} tone="ink" arrow className="max-sm:hidden">
           Hire me
         </Btn>
       </div>
@@ -59,17 +60,12 @@ function Hero() {
     <section className={cn(WRAP, "pb-14 pt-14 lg:pb-20 lg:pt-24")}>
       <p className={cn("m-0 flex items-center gap-2.5 text-ink/60", MONO)}>
         <i aria-hidden="true" className="block size-2 rounded-full bg-flame" />
-        Product designer · open to roles
+        {TITLE} · open to roles
       </p>
-      <h1 className={cn("m-0 mt-8 text-[clamp(44px,7.8vw,116px)] text-ink", DISPLAY)}>
-        <span className="text-ink/35">I used to cut films.</span>
-        <br />
-        Now I cut checkout flows.
+      <h1 className="m-0 mt-8 max-w-[30ch] text-[clamp(28px,4vw,58px)] font-normal leading-[1.1] tracking-[-0.03em] text-ink">
+        I’m a product designer who likes making hard choices feel simple. <span className="text-ink/45">Over the last 4 years, I’ve designed checkout, in-store and AI products for people who shop and the staff who serve them, most recently at Lenskart.</span> I work AI-first, from research to shipped front-end, and I stay with the work until the numbers move.
       </h1>
-      <div className="mt-10 flex flex-col justify-between gap-8 lg:mt-14 lg:flex-row lg:items-end">
-        <p className="m-0 max-w-[34ch] text-xl leading-[1.3] tracking-[-0.01em] text-ink/75 lg:text-2xl">
-          Product designer for commerce, retail and AI tools, most recently at Lenskart, where store pickup now takes 23 in 100 online orders.
-        </p>
+      <div className="mt-10 lg:mt-14">
         <div className="flex flex-wrap gap-2">
           <Btn href="#work" tone="ink" arrow className="h-10 px-4">
             See the work
@@ -83,7 +79,9 @@ function Hero() {
   );
 }
 
-const START = at(2019, 4);
+const START = at(2022, 3);
+/** The strip shows the product design years only. */
+const STRIP = companies.filter((c) => c.s >= START);
 const SPAN = TOTAL - START;
 
 const CLIP: Record<CompanyId, string> = {
@@ -100,20 +98,20 @@ const SPROCKETS = "h-2.5 bg-[repeating-linear-gradient(90deg,rgb(255_255_255/0.2
 /** Seven years as one strip of film: each job is a clip, as wide as the time it took. */
 function Filmstrip() {
   return (
-    <section aria-label="Career, 2019 to now" className="grain grain-light relative bg-ink text-white">
+    <section aria-label="Product design career, 2022 to now" className="grain grain-light relative bg-ink text-white">
       <div className="no-scrollbar relative z-10 overflow-x-auto">
-        <div className="min-w-[1080px] px-5 py-6 sm:px-8 lg:px-12">
+        <div className="min-w-[760px] px-5 py-6 sm:px-8 lg:px-12">
           <div aria-hidden="true" className={SPROCKETS} />
           <div className="relative mt-5 h-4">
-            <span className={cn("absolute left-0 text-white/50", MONO)}>Apr 2019</span>
-            {[2020, 2021, 2022, 2023, 2024, 2025, 2026].map((y) => (
+            <span className={cn("absolute left-0 text-white/50", MONO)}>Mar 2022</span>
+            {[2023, 2024, 2025, 2026].map((y) => (
               <span key={y} style={{ left: `${((at(y, 1) - START) / SPAN) * 100}%` }} className={cn("absolute border-l border-white/25 pl-1.5 text-white/50", MONO)}>
                 {y}
               </span>
             ))}
           </div>
           <ol className="m-0 mt-2 flex list-none gap-1 p-0">
-            {companies.map((c) => (
+            {STRIP.map((c) => (
               <li key={c.id} style={{ flexGrow: c.e - c.s }} className={cn("relative flex h-[132px] min-w-0 basis-0 flex-col justify-between overflow-hidden rounded-[4px] p-3", CLIP[c.id], c.id !== "freelance" && c.id !== "tenk" && "grain grain-soft")}>
                 <p className="relative z-10 m-0 truncate text-xl leading-none tracking-[-0.02em]">{c.name}</p>
                 <div className="relative z-10">
@@ -182,7 +180,7 @@ function CaseCard({ study, tone, art }: { study: typeof pickup; tone: "ink" | "b
   );
 }
 
-const ALSO = ["cashback", "pos", "websites", "campaigns"].map((id) => work.find((w) => w.id === id)).filter((w) => w !== undefined);
+const ALSO = ["cashback", "pos", "websites"].map((id) => work.find((w) => w.id === id)).filter((w) => w !== undefined);
 
 function Work() {
   return (
@@ -210,44 +208,26 @@ function Work() {
   );
 }
 
-const REELS = [
-  {
-    n: "Reel 01 · 2019 – 21",
-    title: "Film editor",
-    body: "Freelance video editor at OML. Digital campaigns for Netflix, Amazon Prime, Tinder and HDFC Life, and videos with creators including Zakir Khan and Biswa Kalyan Rath.",
-    cls: "bg-sky",
-  },
-  {
-    n: "Reel 02 · 2021 – 22",
-    title: "Founder",
-    body: "Started Saoji Spice, a cloud kitchen.",
-    todo: "One line on what you built at Saoji Spice and what running it taught you.",
-    cls: "bg-sand",
-  },
-  {
-    n: "Reel 03 · 2022 – now",
-    title: "Product designer",
-    body: "UX designer at Ting, cohort 8 at 10k Designers, product designer at Lenskart, and freelance since March 2026 with clients including Balter and Rainbow Hospitals.",
-    cls: "bg-flame",
-  },
-];
+const STEP_TONE = ["bg-sky", "bg-sand", "bg-flame", "bg-white"];
 
-function Backstory() {
+/** How AI sits in the work, one step per card. */
+function Approach() {
   return (
-    <section id="backstory" className={cn(WRAP, "scroll-mt-6 pb-20 lg:pb-28")}>
-      <SectionHead index="02" label="Backstory" title="Three careers. The cut carried over." />
-      <div className="mt-12 grid gap-4 lg:mt-16 lg:grid-cols-3">
-        {REELS.map((r, i) => (
-          <article key={r.title} className={cn("grain grain-soft relative flex min-h-[340px] flex-col justify-between gap-12 rounded-2xl p-6 text-ink lg:min-h-[420px]", r.cls, i === 1 && "lg:mt-10", i === 2 && "lg:mt-20")}>
-            <p className={cn("relative z-10 m-0 text-ink/65", MONO)}>{r.n}</p>
+    <section id="approach" className={cn(WRAP, "scroll-mt-6 pb-20 lg:pb-28")}>
+      <SectionHead index="02" label="How I work" title="AI is in every step, and I can build what I design." />
+      <ol className="m-0 mt-12 grid list-none gap-4 p-0 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4">
+        {AI_WORKFLOW.map((w, i) => (
+          <li key={w.id} className={cn("relative flex min-h-[320px] flex-col justify-between gap-12 rounded-2xl p-6 text-ink lg:min-h-[400px]", STEP_TONE[i], i < 3 && "grain grain-soft", i % 2 === 1 && "lg:mt-10")}>
+            <p className={cn("relative z-10 m-0 text-ink/65", MONO)}>Step {String(i + 1).padStart(2, "0")}</p>
             <div className="relative z-10">
-              <h3 className={cn("m-0 text-[40px] lg:text-5xl", DISPLAY)}>{r.title}</h3>
-              <p className="m-0 mt-5 max-w-[36ch] text-base leading-[1.4] text-ink/80">{r.body}</p>
-              {r.todo && <p className="m-0 mt-4 rounded-md border border-dashed border-ink/40 p-3 font-mono text-[13px] leading-[1.5] text-ink/65">[{r.todo}]</p>}
+              <h3 className={cn("m-0 text-[32px] lg:text-4xl", DISPLAY, "leading-none")}>{w.step}</h3>
+              <p className="m-0 mt-5 text-base leading-[1.4] text-ink/80">{w.body}</p>
+              <p className={cn("m-0 mt-5 border-t border-ink/25 pt-4 leading-[1.4] text-ink/65", MONO)}>{w.proof}</p>
             </div>
-          </article>
+          </li>
         ))}
-      </div>
+      </ol>
+      <p className="m-0 mt-8 text-sm leading-[1.4] text-ink/50">{BEFORE}</p>
     </section>
   );
 }
@@ -289,7 +269,7 @@ function Contact() {
       <div className="grain grain-soft relative rounded-3xl bg-flame p-6 text-ink lg:p-12">
         <div className="relative z-10">
           <p className={cn("m-0 text-ink/70", MONO)}>04 — Next</p>
-          <h2 className={cn("m-0 mt-8 text-[clamp(46px,9vw,128px)]", DISPLAY)}>Let’s make the next cut.</h2>
+          <h2 className={cn("m-0 mt-8 text-[clamp(46px,9vw,128px)]", DISPLAY)}>Let’s make the next one simple.</h2>
           <div className="mt-12 flex flex-col justify-between gap-8 lg:mt-20 lg:flex-row lg:items-end">
             <a href={`mailto:${EMAIL}`} className={cn("flex w-fit items-center gap-2 break-all rounded text-2xl leading-[1.1] tracking-[-0.02em] text-ink underline decoration-ink/40 underline-offset-[6px] hover:decoration-ink lg:text-4xl", FOCUS)}>
               {EMAIL}
@@ -340,7 +320,7 @@ export function HomeV3() {
         <Filmstrip />
         <Stats />
         <Work />
-        <Backstory />
+        <Approach />
         <Lab />
         <Contact />
       </main>
