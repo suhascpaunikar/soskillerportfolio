@@ -11,6 +11,9 @@ export const NAV = [
   { href: "/v2", label: "V2" },
   { href: "/v3", label: "V3" },
   { href: "/v4", label: "V4" },
+  { href: "/v5", label: "V5" },
+  { href: "/v6", label: "V6" },
+  { href: "/v7", label: "V7" },
 ] as const;
 
 /**
@@ -34,7 +37,7 @@ export function PrimaryNav({ current = "/", exact = true, className }: { current
             href={item.href}
             aria-current={on ? (exact ? "page" : "true") : undefined}
             className={cn(
-              "flex h-[34px] items-center rounded-full border px-3.5 text-[13px] no-underline outline-offset-2 transition-colors focus-visible:outline-2 focus-visible:outline-playhead",
+              "flex h-[34px] items-center rounded-full border px-3 text-[13px] no-underline outline-offset-2 transition-colors focus-visible:outline-2 focus-visible:outline-playhead",
               on ? "border-white/[0.16] bg-[linear-gradient(180deg,#202020_0%,#000_100%)] font-semibold text-white" : "border-transparent font-medium text-muted-foreground hover:text-foreground",
             )}
           >

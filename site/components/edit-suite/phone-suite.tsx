@@ -19,9 +19,7 @@ const TABS = [
   { href: "/about", label: "About", Icon: CircleUser },
   { href: "/now", label: "Now", Icon: Clock },
   { href: "/resume", label: "Résumé", Icon: FileText },
-  { href: "/v2", label: "V2", Icon: Layers },
-  { href: "/v3", label: "V3", Icon: Layers },
-  { href: "/v4", label: "V4", Icon: Layers },
+  { href: "/versions", label: "Versions", Icon: Layers },
 ];
 
 export function PhoneSuite({ suite, className }: { suite: Suite; className?: string }) {
