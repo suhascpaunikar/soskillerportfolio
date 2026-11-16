@@ -8,6 +8,8 @@ import { EMAIL, TOTAL, at, companies, experiments, rangeOf, work, type CompanyId
 import { measurements, pickup } from "@/lib/case-studies";
 import { cn } from "@/lib/utils";
 
+import { VersionSwitch } from "@/components/versions/switch";
+
 import { CopyEmail } from "./copy-email";
 
 /**
@@ -28,28 +30,6 @@ const NAV = [
   { href: "/about", label: "About" },
 ];
 
-const VERSIONS = [
-  { href: "/", label: "V1" },
-  { href: "/v2", label: "V2" },
-  { href: "/v3", label: "V3" },
-  { href: "/v4", label: "V4" },
-];
-
-function Versions({ className }: { className?: string }) {
-  return (
-    <nav aria-label="Versions of this page" className={cn("flex items-center gap-0.5 rounded-md bg-ink/[0.08] p-0.5", className)}>
-      {VERSIONS.map((v) => {
-        const on = v.href === "/v3";
-        return (
-          <Link key={v.href} href={v.href} aria-current={on ? "page" : undefined} className={cn(MONO, "rounded px-2 py-2 no-underline", on ? "bg-ink text-paper" : "text-ink/60 hover:text-ink", FOCUS)}>
-            {v.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
 function Header() {
   return (
     <header className={cn(WRAP, "flex h-[72px] items-center justify-between gap-4")}>
@@ -65,7 +45,7 @@ function Header() {
         ))}
       </nav>
       <div className="flex items-center gap-2">
-        <Versions className="max-sm:hidden" />
+        <VersionSwitch current="/v3" />
         <Btn href={`mailto:${EMAIL}`} tone="ink" arrow>
           Hire me
         </Btn>
@@ -342,7 +322,7 @@ function Footer() {
             {l.label}
           </Link>
         ))}
-        <Versions />
+        <VersionSwitch current="/v3" />
       </div>
     </footer>
   );

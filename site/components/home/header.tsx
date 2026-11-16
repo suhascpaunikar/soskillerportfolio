@@ -14,9 +14,7 @@ export const NAV = [
   { href: "#backstory", label: "Backstory" },
   { href: "#lab", label: "Lab" },
   { href: "/about", label: "About" },
-  { href: "/", label: "V1" },
-  { href: "/v3", label: "V3" },
-  { href: "/v4", label: "V4" },
+  { href: "/versions", label: "Versions" },
 ] as const;
 
 export function Header() {

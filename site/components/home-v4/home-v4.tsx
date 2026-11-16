@@ -7,6 +7,8 @@ import { Mark } from "@/components/home/ui";
 import { EMAIL, companies, experiments } from "@/lib/career";
 import { cn } from "@/lib/utils";
 
+import { VersionSwitch } from "@/components/versions/switch";
+
 import { WorkGrid } from "./work-grid";
 
 /**
@@ -20,13 +22,6 @@ const MONO = "font-mono text-[11px] uppercase leading-none tracking-[0.06em]";
 const FOCUS = "outline-offset-4 focus-visible:outline-2 focus-visible:outline-[#1e1e20]";
 const INK = "text-[#1e1e20]";
 
-const VERSIONS = [
-  { href: "/", label: "V1" },
-  { href: "/v2", label: "V2" },
-  { href: "/v3", label: "V3" },
-  { href: "/v4", label: "V4" },
-];
-
 function Header() {
   return (
     <header className={cn(WRAP, "flex h-[72px] items-center justify-between gap-4")}>
@@ -34,16 +29,7 @@ function Header() {
         <Mark className="size-5 text-flame" />
         <span className="text-[17px] font-medium leading-none tracking-[-0.01em]">Suhas Paunikar</span>
       </Link>
-      <nav aria-label="Versions of this page" className="flex items-center gap-0.5 rounded-full border border-black/10 bg-white p-0.5">
-        {VERSIONS.map((v) => {
-          const on = v.href === "/v4";
-          return (
-            <Link key={v.href} href={v.href} aria-current={on ? "page" : undefined} className={cn(MONO, "rounded-full px-2.5 py-2 no-underline", on ? "bg-[#1e1e20] text-white" : "text-black/55 hover:text-black", FOCUS)}>
-              {v.label}
-            </Link>
-          );
-        })}
-      </nav>
+      <VersionSwitch current="/v4" />
     </header>
   );
 }

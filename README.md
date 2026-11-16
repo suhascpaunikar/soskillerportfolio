@@ -8,11 +8,16 @@ Research, references and structure for redoing [suhaspaunikar.framer.website](ht
 
 - **Direction (2 Nov 2026): Director's Cut.**
 - **Platform (2 Nov 2026): code, in this repo.** The site lives in [`site/`](site/): Next.js 16, TypeScript, Tailwind CSS v4 and the shadcn/ui structure. To run it: `cd site && npm install && npm run dev`.
-- **Four versions of the home page sit side by side** (15 Nov 2026). The main navigation has V2, V3 and V4 tabs.
+- **Seven versions of the home page sit side by side.** The main navigation has a tab for each (one "Versions" tab on phones).
   - **`/` (V1):** the edit suite described below.
   - **`/v2`:** a long scrolling page that follows the design system of [agentmail.to](https://www.agentmail.to/) closely: warm near-black, paper panels, one orange and one blue, Figtree (standing in for Aeonik) with JetBrains Mono labels. Type runs 56 / 40 / 32 / 24 / 20 / 16 / 14px at regular weight with -1% tracking. Code in [`site/components/home/`](site/components/home/).
   - **`/v3`:** takes only the mood from AgentMail (warm neutrals, one orange, mono labels, grain). The page is paper, the headline is very large, and the career runs across it as a strip of film. Code in [`site/components/home-v3/`](site/components/home-v3/).
   - **`/v4`:** learns from five designers' portfolios (shriyap.com, hellosid.in, anukriti.work, snehaha.fyi, dharmeshnayak.com) rather than a product site. Light paper with a dot grid; the bio is a paragraph with highlighted words; the navigation is a pill floating at the bottom; work sits in cards you can filter. Code in [`site/components/home-v4/`](site/components/home-v4/).
+  - **`/v5`, `/v6`, `/v7` use a new positioning (16 Nov 2026):** Senior Product Designer, four years, fluent in AI workflows, with measurable results. The earlier careers get one small line. The shared copy is in [`site/lib/profile.ts`](site/lib/profile.ts).
+    - **`/v5` Impact first:** "I design products that move the numbers." White, black rules, heavy type, one blue.
+    - **`/v6` AI-first:** "I design with AI in the loop, from first prompt to shipped product." Near-black, mono labels, one lime.
+    - **`/v7` Senior, plainly:** "I take a product from an unclear problem to a measured result, and I use AI at every step." Serif on cream, deep green.
+  - **`/versions`** lists all seven.
 - **V1, the edit suite,** desktop and phone:
   - **Desktop:** an edit suite: a program monitor and a timeline that runs by year. The intro comes first, then three layers: companies at the bottom, the work done there in the middle, and experiments from the same period on top.
   - **Scrubbing:** drag along the years and the monitor cross-dissolves layer by layer. Click a clip to open its page.
@@ -60,11 +65,12 @@ References with "what to steal" → [`04-references.md`](research/04-references.
 ```
 README.md                          ← you are here
 site/                              the portfolio in code (Next.js 16 · TypeScript · Tailwind · shadcn)
-  app/                             routes: / (the edit suite), /v2, /v3 and /v4 (the other home pages), /playground, placeholders for the other pages
+  app/                             routes: / (the edit suite), /v2 to /v7 (the other home pages), /versions (the list of them), /playground, placeholders for the other pages
   components/edit-suite/           the home page (V1): monitor, timelines, export dialog
   components/home/                 home page V2: one file per section, shared type scale in ui.tsx
   components/home-v3/              home page V3
   components/home-v4/              home page V4
+  components/home-v5/ … home-v7/   home pages V5 to V7 (new positioning; copy in lib/profile.ts)
   components/ui/                   the 21st.dev Liquid Metal Button (patched) and the shared liquid-metal module
   lib/career.ts                    timeline data: companies, work, experiments and dates
 research/
