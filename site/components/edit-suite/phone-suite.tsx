@@ -21,6 +21,7 @@ const TABS = [
   { href: "/resume", label: "Résumé", Icon: FileText },
   { href: "/v2", label: "V2", Icon: Layers },
   { href: "/v3", label: "V3", Icon: Layers },
+  { href: "/v4", label: "V4", Icon: Layers },
 ];
 
 export function PhoneSuite({ suite, className }: { suite: Suite; className?: string }) {
