@@ -291,7 +291,7 @@ dialog::backdrop {
 .sg-wafer {
   position: absolute;
   left: 50%;
-  width: 38ch;
+  width: 56ch;
   aspect-ratio: 1;
   transform-style: preserve-3d;
 }
@@ -339,12 +339,23 @@ dialog::backdrop {
   background-size: 1.1em 1.1em;
   background-position: center;
 }
+/* The tree's shadow on the wafer, cast back and to the right by light from the upper left. */
+.sg-shade {
+  position: absolute;
+  left: 54%;
+  top: 45%;
+  width: var(--size);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(4 7 3 / 0.78), rgb(4 7 3 / 0.4) 62%, transparent);
+}
 .sg-scribe {
   position: absolute;
   bottom: 4.6%;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 0.5em;
+  font-size: 0.7em;
   letter-spacing: 0.12em;
   white-space: nowrap;
   color: rgb(255 255 255 / 0.3);
@@ -363,8 +374,8 @@ dialog::backdrop {
 .sg-shadow {
   position: absolute;
   left: 50%;
-  width: 46ch;
-  height: 9em;
+  width: 66ch;
+  height: 13em;
   transform: translate(-50%, -42%);
   border-radius: 50%;
   background: radial-gradient(closest-side, rgb(0 0 0 / 0.7), transparent);
@@ -403,6 +414,9 @@ dialog::backdrop {
 .sg-fruit {
   position: absolute;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  height: 1.15em;
   padding: 0;
   border: 0;
   background: none;
@@ -411,7 +425,10 @@ dialog::backdrop {
   line-height: inherit;
   white-space: pre;
   cursor: pointer;
-  text-shadow: 0 0 0.8em var(--glow);
+  text-shadow:
+    0 0 0.2em #0b0c0a,
+    0 0 0.2em #0b0c0a,
+    0 0 0.9em var(--glow);
 }
 .sg-fruit[aria-disabled="true"] {
   cursor: default;
@@ -431,6 +448,11 @@ dialog::backdrop {
 .sg-wob {
   display: inline-block;
 }
+/* Labels are drawn larger than the grid (FRUIT_SCALE in garden-tree.ts) so they read on a phone. */
+.sg-wob {
+  font-size: 1.3em;
+  line-height: 1;
+}
 .sg-fallen .sg-fx {
   transform: translateX(var(--dx));
 }
@@ -447,6 +469,9 @@ dialog::backdrop {
   }
   .sg-shadow {
     transition: opacity 700ms ease 300ms;
+  }
+  .sg-shade {
+    transition: width 1100ms cubic-bezier(0.3, 0.6, 0.2, 1) 200ms;
   }
   .sg-ripple {
     animation: sg-ripple 1100ms cubic-bezier(0.2, 0.6, 0.3, 1) var(--d) both;
