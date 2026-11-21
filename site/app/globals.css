@@ -273,3 +273,330 @@ dialog::backdrop {
     transform: none;
   }
 }
+
+/* ───── Home page (v6): the silicon garden in the footer ───── */
+/* Sizes are in em and ch of the garden box, so the whole piece scales with its font size. */
+
+@property --sg-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.sg-box {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The wafer: a stack of discs, so it has a visible edge once it lies down. */
+.sg-wafer {
+  position: absolute;
+  left: 50%;
+  width: 56ch;
+  aspect-ratio: 1;
+  transform-style: preserve-3d;
+}
+.sg-disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  clip-path: inset(0 0 2.4% 0); /* the flat, as on a real wafer */
+}
+.sg-edge {
+  background: linear-gradient(180deg, #3a3f47, #121418 70%);
+}
+.sg-top {
+  overflow: hidden;
+  background:
+    linear-gradient(118deg, transparent 30%, rgb(255 255 255 / 0.2) 44%, rgb(255 255 255 / 0.04) 52%, transparent 60%),
+    conic-gradient(
+      from var(--sg-angle),
+      hsl(275 70% 58% / 0.7),
+      hsl(190 80% 52% / 0.7),
+      hsl(84 80% 56% / 0.65),
+      hsl(40 90% 58% / 0.7),
+      hsl(330 75% 60% / 0.7),
+      hsl(228 75% 60% / 0.7),
+      hsl(275 70% 58% / 0.7)
+    ),
+    radial-gradient(circle at 38% 30%, #5b616b, #2a2e35 52%, #14161a);
+  background-blend-mode: screen, soft-light, normal;
+  box-shadow:
+    inset 0 0 0 max(1px, 0.08em) rgb(255 255 255 / 0.16),
+    inset 0 0 2.4em rgb(0 0 0 / 0.55);
+  transition: filter 400ms ease;
+}
+.sg-box:hover .sg-top {
+  filter: brightness(1.18) saturate(1.25);
+}
+/* The die grid, kept inside the edge exclusion ring. */
+.sg-dies {
+  position: absolute;
+  inset: 4.5%;
+  border-radius: 50%;
+  background-image:
+    linear-gradient(90deg, rgb(10 11 13 / 0.6) max(1px, 0.08em), transparent 0),
+    linear-gradient(rgb(10 11 13 / 0.6) max(1px, 0.08em), transparent 0);
+  background-size: 1.1em 1.1em;
+  background-position: center;
+}
+/* The tree's shadow on the wafer, cast back and to the right by light from the upper left. */
+.sg-shade {
+  position: absolute;
+  left: 54%;
+  top: 45%;
+  width: var(--size);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(4 7 3 / 0.78), rgb(4 7 3 / 0.4) 62%, transparent);
+}
+.sg-scribe {
+  position: absolute;
+  bottom: 4.6%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7em;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  color: rgb(255 255 255 / 0.3);
+}
+.sg-ripple {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 72%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: max(1px, 0.12em) solid rgb(143 211 255 / 0.85);
+  opacity: 0;
+  pointer-events: none;
+}
+.sg-shadow {
+  position: absolute;
+  left: 50%;
+  width: 66ch;
+  height: 13em;
+  transform: translate(-50%, -42%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.7), transparent);
+  opacity: 0;
+}
+.sg-shadow.sg-on {
+  opacity: 1;
+}
+
+/* The tree, one positioned character at a time. */
+.sg-cell {
+  position: absolute;
+  width: 1ch;
+  text-align: center;
+}
+.sg-out {
+  opacity: 0;
+}
+
+.sg-rain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.sg-drop {
+  position: absolute;
+  top: 0;
+  width: 1ch;
+  text-align: center;
+  font-weight: 700;
+  color: #8fd3ff;
+  opacity: 0;
+}
+
+/* Fruit. Four nested spans: fall sideways, fall down and bounce, ripen, wobble on hover. */
+.sg-fruit {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  height: 1.15em;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  line-height: inherit;
+  white-space: pre;
+  cursor: pointer;
+  text-shadow:
+    0 0 0.2em #0b0c0a,
+    0 0 0.2em #0b0c0a,
+    0 0 0.9em var(--glow);
+}
+.sg-fruit[aria-disabled="true"] {
+  cursor: default;
+}
+/* The focus ring sits on the text, so it follows the fruit down to the wafer. */
+.sg-fruit:focus-visible {
+  outline: none;
+}
+.sg-fruit:focus-visible .sg-wob {
+  outline: 2px solid #c8f542;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.sg-fx,
+.sg-fy,
+.sg-ripe,
+.sg-wob {
+  display: inline-block;
+}
+/* Labels are drawn larger than the grid (FRUIT_SCALE in garden-tree.ts) so they read on a phone. */
+.sg-wob {
+  font-size: 1.3em;
+  line-height: 1;
+}
+.sg-fallen .sg-fx {
+  transform: translateX(var(--dx));
+}
+.sg-fallen .sg-fy {
+  transform: translateY(var(--dy)) rotate(var(--rot));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sg-wafer {
+    transition: transform 760ms cubic-bezier(0.5, 0, 0.2, 1);
+  }
+  .sg-top {
+    animation: sg-shimmer 26s linear infinite;
+  }
+  .sg-shadow {
+    transition: opacity 700ms ease 300ms;
+  }
+  .sg-shade {
+    transition: width 1100ms cubic-bezier(0.3, 0.6, 0.2, 1) 200ms;
+  }
+  .sg-ripple {
+    animation: sg-ripple 1100ms cubic-bezier(0.2, 0.6, 0.3, 1) var(--d) both;
+  }
+  .sg-in {
+    animation: sg-in 340ms cubic-bezier(0.2, 0.7, 0.2, 1) var(--d) both;
+  }
+  .sg-out {
+    animation: sg-out 260ms ease-in var(--d) both;
+  }
+  .sg-drop {
+    animation: sg-drop var(--t) cubic-bezier(0.5, 0, 1, 0.7) var(--d) both;
+  }
+  .sg-ripe {
+    animation: sg-ripen 560ms cubic-bezier(0.3, 1.6, 0.5, 1) var(--d) both;
+  }
+  .sg-fruit:not([aria-disabled="true"]):hover .sg-wob {
+    animation: sg-wobble 620ms ease-in-out;
+  }
+  .sg-fallen .sg-fx {
+    animation: sg-fall-x 860ms cubic-bezier(0.3, 0.1, 0.6, 1) both;
+  }
+  .sg-fallen .sg-fy {
+    animation: sg-fall-y 860ms linear both;
+  }
+}
+
+@keyframes sg-shimmer {
+  to {
+    --sg-angle: 360deg;
+  }
+}
+@keyframes sg-ripple {
+  from {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(0.04);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes sg-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sg-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes sg-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-0.5em);
+  }
+  12%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(var(--y));
+  }
+}
+@keyframes sg-ripen {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sg-wobble {
+  25% {
+    transform: rotate(-7deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+  75% {
+    transform: rotate(-3deg);
+  }
+}
+@keyframes sg-fall-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--dx));
+  }
+}
+@keyframes sg-fall-y {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  58% {
+    transform: translateY(var(--dy)) rotate(var(--rot));
+    animation-timing-function: cubic-bezier(0, 0.55, 0.45, 1);
+  }
+  74% {
+    transform: translateY(calc(var(--dy) - 1em)) rotate(var(--rot));
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  87% {
+    transform: translateY(var(--dy)) rotate(var(--rot));
+    animation-timing-function: cubic-bezier(0, 0.55, 0.45, 1);
+  }
+  94% {
+    transform: translateY(calc(var(--dy) - 0.3em)) rotate(var(--rot));
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  100% {
+    transform: translateY(var(--dy)) rotate(var(--rot));
+  }
+}

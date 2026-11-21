@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { CopyEmail } from "@/components/home-v3/copy-email";
+import { SiliconGarden } from "@/components/home-v6/silicon-garden";
 import { CartArt, MarkerArt } from "@/components/home/work";
 import { VersionSwitch } from "@/components/versions/switch";
 import { EMAIL, experiments } from "@/lib/career";
@@ -252,8 +253,17 @@ function Contact() {
           </Link>
         </div>
       </div>
-      <p className={cn("m-0 py-8 text-center text-white/35", MONO)}>© 2026 suhas paunikar · designed and built with claude code</p>
     </section>
+  );
+}
+
+/** A bare wafer that grows a tree of models when watered. */
+function Footer() {
+  return (
+    <footer className={cn(WRAP, "pt-16 lg:pt-24")}>
+      <SiliconGarden />
+      <p className={cn("m-0 pb-8 pt-14 text-center text-white/35", MONO)}>© 2026 suhas paunikar · designed and built with claude code</p>
+    </footer>
   );
 }
 
@@ -271,6 +281,7 @@ export function HomeV6() {
         <Experience />
         <Contact />
       </main>
+      <Footer />
     </div>
   );
 }
