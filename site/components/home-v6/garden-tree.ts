@@ -2,8 +2,9 @@
  * The garden's tree, drawn as characters on a 63 × 28 grid and worked out once at load.
  * Deterministic, so the server and the browser draw the same tree.
  *
- * Each grown stage is the same tree at a different age: one skeleton of trunk, limbs,
- * branches and twigs, scaled from the root, with leaf clumps lit from the upper left.
+ * Shaped like an umbrella tree: a long straight trunk forks into a narrow Y, the forks fan out
+ * into branches, and the branches hold up a domed crown whose edges droop. Each grown stage is
+ * the same tree at a different age, scaled from the root.
  */
 
 export const COLS = 63;
@@ -36,70 +37,65 @@ export function hash(a: number, b: number, salt: number) {
   return (x >>> 0) / 4294967296;
 }
 
-// ───── The skeleton, in [cols from the trunk, rows above the ground] ─────
+/** Smooth noise in [0, 1): hashed values on a lattice, blended between lattice points. */
+function noise(x: number, y: number, salt: number) {
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const sx = (x - x0) ** 2 * (3 - 2 * (x - x0));
+  const sy = (y - y0) ** 2 * (3 - 2 * (y - y0));
+  const upper = hash(x0, y0, salt) * (1 - sx) + hash(x0 + 1, y0, salt) * sx;
+  const lower = hash(x0, y0 + 1, salt) * (1 - sx) + hash(x0 + 1, y0 + 1, salt) * sx;
+  return upper * (1 - sy) + lower * sy;
+}
+
+// ───── The shape, in [cols from the trunk, rows above the ground] ─────
 
 type Point = [x: number, y: number];
-type Limb = { from: Point; to: Point; level: 1 | 2 | 3; thick?: boolean };
-type Clump = [x: number, y: number, ry: number];
+type Limb = { from: Point; to: Point; level: 1 | 2 | 3 };
 
-const TRUNK = 7; // rows of trunk on the grown tree before it forks
+const TRUNK = 9; // rows of straight trunk before the fork
+
+/**
+ * The crown is the shell between two half-ellipses with one centre: the outer one is the top of
+ * the dome and the inner one its underside. Beyond the ends of the inner one the shell hangs
+ * down at the sides, like the edge of an umbrella.
+ */
+const DOME = { y: 15.5, a: 31, b: 11, a2: 22.5, b2: 4.2 };
 
 const LIMBS: Limb[] = [
-  { from: [-1, 7], to: [-9, 12], level: 1, thick: true },
-  { from: [1, 7], to: [10, 12.5], level: 1, thick: true },
-  { from: [0, 7], to: [-0.5, 15], level: 1, thick: true },
+  // The fork: two arms rising almost side by side.
+  { from: [-1, 9.5], to: [-3, 15.5], level: 1 },
+  { from: [1, 9.5], to: [3, 15.5], level: 1 },
 
-  { from: [-9, 12], to: [-17, 14.5], level: 2 },
-  { from: [-9, 12], to: [-11, 17.5], level: 2 },
-  { from: [10, 12.5], to: [18, 14.5], level: 2 },
-  { from: [10, 12.5], to: [11, 18], level: 2 },
-  { from: [-0.5, 15], to: [-5, 19.5], level: 2 },
-  { from: [-0.5, 15], to: [4, 20], level: 2 },
+  // Long low branches out towards the drooping edges.
+  { from: [-1.8, 12.3], to: [-13, 15.5], level: 2 },
+  { from: [1.8, 12.3], to: [13.5, 15.8], level: 2 },
+  // Each arm fans in two.
+  { from: [-3, 15.5], to: [-9.5, 19.6], level: 2 },
+  { from: [-3, 15.5], to: [-3.5, 20.5], level: 2 },
+  { from: [3, 15.5], to: [10, 19.4], level: 2 },
+  { from: [3, 15.5], to: [3, 20.6], level: 2 },
 
-  { from: [-17, 14.5], to: [-23, 15.5], level: 3 },
-  { from: [-17, 14.5], to: [-19, 18], level: 3 },
-  { from: [-11, 17.5], to: [-15, 20], level: 3 },
-  { from: [18, 14.5], to: [24, 15.5], level: 3 },
-  { from: [18, 14.5], to: [20, 18], level: 3 },
-  { from: [11, 18], to: [15, 20.5], level: 3 },
-  { from: [-5, 19.5], to: [-7, 22.5], level: 3 },
-  { from: [4, 20], to: [6, 23], level: 3 },
-];
-
-/** Leaf clumps for each grown stage, before scaling. ry is in rows; clumps are about twice as wide. */
-const SAPLING_CLUMPS: Clump[] = [
-  [-9, 12.8, 3.4],
-  [10, 13.3, 3.4],
-  [-0.5, 16, 4],
-];
-
-const YOUNG_CLUMPS: Clump[] = [
-  [-17, 15, 2.8],
-  [-11, 18, 3.2],
-  [18, 15, 2.8],
-  [11, 18.5, 3.2],
-  [-5, 20, 3.2],
-  [4, 20.5, 3.2],
-  [0, 16.5, 3.8],
-  [-8, 14, 2.8],
-  [8, 14.5, 2.8],
-];
-
-const GROWN_CLUMPS: Clump[] = [
-  [-23, 16, 2.5],
-  [-19, 18.8, 3],
-  [-14, 21.2, 3.2],
-  [-7, 23.2, 3.2],
-  [6, 23.4, 3.1],
-  [14.5, 21.2, 3.2],
-  [20, 18.8, 3],
-  [24, 16, 2.5],
-  [0, 19.5, 4.4],
-  [-10, 16.5, 3.6],
-  [10, 16.8, 3.6],
-  [-16, 14.6, 2.2],
-  [17, 14.6, 2.2],
-  [0, 14.5, 2.8],
+  // Twigs up into the underside of the crown.
+  { from: [-13, 15.5], to: [-22, 18], level: 3 },
+  { from: [-13, 15.5], to: [-19, 19.9], level: 3 },
+  { from: [-9.5, 19.6], to: [-16, 20.8], level: 3 },
+  { from: [-9.5, 19.6], to: [-11, 21.6], level: 3 },
+  { from: [-3.5, 20.5], to: [-7, 22.2], level: 3 },
+  { from: [-3.5, 20.5], to: [-1, 22.6], level: 3 },
+  { from: [13.5, 15.8], to: [22.5, 18.2], level: 3 },
+  { from: [13.5, 15.8], to: [19.5, 19.7], level: 3 },
+  { from: [10, 19.4], to: [16.5, 20.7], level: 3 },
+  { from: [10, 19.4], to: [11.5, 21.5], level: 3 },
+  { from: [3, 20.6], to: [7.5, 22.1], level: 3 },
+  { from: [3, 20.6], to: [1, 22.6], level: 3 },
+  // Finer twigs off the branches, into the crown and its drooping edges.
+  { from: [-7.4, 13.9], to: [-14, 21], level: 3 },
+  { from: [7.6, 14], to: [14.5, 20.9], level: 3 },
+  { from: [-17.5, 16.7], to: [-26, 18.8], level: 3 },
+  { from: [18, 17], to: [26.5, 19], level: 3 },
+  { from: [-16, 17.7], to: [-21, 20.3], level: 3 },
+  { from: [16.5, 17.75], to: [21.5, 20.2], level: 3 },
 ];
 
 // ───── Drawing ─────
@@ -120,13 +116,14 @@ function text(g: Grid, dy: number, s: string, tone: (i: number, ch: string) => T
 }
 
 /**
- * A limb as ASCII: walk the grid from one end to the other and pick each character from the
- * step that leaves it, so shallow runs read `_/` or `\_` and steep ones read `|`, `/` or `\`.
+ * A limb as ASCII. Steep stretches step one character per row (`|`, `/`, `\`). Shallow ones
+ * curve along each row the way hand-drawn ASCII does: `.-'` rising to the right, `'-.` rising
+ * to the left, so a long low branch reads as a thin slanted line rather than a ledge.
  */
-function line(g: Grid, [x0, y0]: Point, [x1, y1]: Point, tone: Tone, shift = 0) {
-  let c = Math.round(MID + x0) + shift;
+function line(g: Grid, [x0, y0]: Point, [x1, y1]: Point, tone: Tone) {
+  let c = Math.round(MID + x0);
   let r = Math.round(BASE - y0);
-  const c1 = Math.round(MID + x1) + shift;
+  const c1 = Math.round(MID + x1);
   const r1 = Math.round(BASE - y1);
   const dc = Math.abs(c1 - c);
   const dr = Math.abs(r1 - r);
@@ -146,13 +143,27 @@ function line(g: Grid, [x0, y0]: Point, [x1, y1]: Point, tone: Tone, shift = 0) 
     }
     cells.push([r, c]);
   }
-  cells.forEach(([cr, cc], i) => {
-    const [nr, nc] = cells[Math.min(i + 1, cells.length - 1)];
-    const [pr, pc] = cells[Math.max(i - 1, 0)];
-    const [tr, tc] = i < cells.length - 1 ? [nr - cr, nc - cc] : [cr - pr, cc - pc];
-    const ch = tr === 0 ? "_" : tc === 0 ? "|" : tc > 0 === tr < 0 ? "/" : "\\";
-    put(g, cr, cc, ch, tone);
-  });
+  // Group the cells into runs along each row.
+  const runs: [number, number][][] = [];
+  for (const cell of cells) {
+    const last = runs[runs.length - 1];
+    if (last && last[0][0] === cell[0]) last.push(cell);
+    else runs.push([cell]);
+  }
+  const rising = r1 < Math.round(BASE - y0) ? sc : 0; // +1 rising to the right, -1 to the left
+  for (const run of runs) {
+    const cols = run.map(([, cc]) => cc).sort((p, q) => p - q);
+    const row = run[0][0];
+    if (cols.length === 1) {
+      put(g, row, cols[0], dc === 0 || dr > dc * 2.5 ? "|" : sc > 0 ? "/" : "\\", tone);
+      continue;
+    }
+    cols.forEach((cc, i) => {
+      const low = rising > 0 ? i === 0 : i === cols.length - 1;
+      const high = rising > 0 ? i === cols.length - 1 : i === 0;
+      put(g, row, cc, rising === 0 ? "-" : low ? "." : high ? "'" : "-", tone);
+    });
+  }
 }
 
 const GRAIN = "||:|'|!:";
@@ -186,49 +197,49 @@ const RAMP: [Tone, string][] = [
   ["leaf4", "&@&*@"],
 ];
 
-const LIGHT = [-0.52, -0.62, 0.58]; // from the upper left, a little in front
+const LIGHT = [-0.52, 0.62, 0.58]; // from the upper left, a little in front (y points up)
 
-/** Leaves: each clump shaded as a soft ball, with creases where clumps meet and gaps in the shade. */
-function crown(g: Grid, clumps: Clump[], s: number, branches: Grid) {
-  const scaled = clumps.map(([x, y, ry]) => ({ c: MID + x * s, r: BASE - y * s, ry: ry * s, rx: ry * s * 2.1, depth: 0 }));
-  const top = Math.min(...scaled.map((k) => k.r - k.ry));
-  const bottom = Math.max(...scaled.map((k) => k.r + k.ry));
-  // Clumps near the middle of the crown sit behind the outer ones, so they get less light.
-  const cc = scaled.reduce((sum, k) => sum + k.c, 0) / scaled.length;
-  const cr = scaled.reduce((sum, k) => sum + k.r, 0) / scaled.length;
-  const far = Math.max(...scaled.map((k) => Math.hypot((k.c - cc) / 2.1, k.r - cr)));
-  scaled.forEach((k, i) => (k.depth = (Math.hypot((k.c - cc) / 2.1, k.r - cr) / far - 0.6) * 0.22 + (hash(i, 3, 11) - 0.5) * 0.08));
-
+/**
+ * Leaves: the domed shell, lit from the upper left. The top of the dome is brightest and the
+ * underside darkest, soft noise breaks it into clumps, and the edges and underside are ragged.
+ */
+function dome(g: Grid, s: number, branches: Grid) {
+  const cy = DOME.y * s;
+  const a = DOME.a * s;
+  const b = DOME.b * s;
+  // The shell thins more slowly than the tree shrinks, so a young crown still looks full.
+  const a2 = a - (DOME.a - DOME.a2) * Math.sqrt(s);
+  const b2 = b - (DOME.b - DOME.b2) * Math.sqrt(s);
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      let d1 = Infinity;
-      let d2 = Infinity;
-      let near = scaled[0];
-      for (const k of scaled) {
-        const d = ((c - k.c) / k.rx) ** 2 + ((r - k.r) / k.ry) ** 2;
-        if (d < d1) {
-          d2 = d1;
-          d1 = d;
-          near = k;
-        } else if (d < d2) d2 = d;
-      }
+      const x = c - MID;
+      const y = BASE - r;
       const n = hash(r, c, 1);
-      if (d1 > 1 + (n - 0.5) * 0.45) continue;
+      const outer = (x / a) ** 2 + ((y - cy) / b) ** 2;
+      // A smooth top to the dome, more ragged further down its sides.
+      const rough = y > cy + b * 0.55 ? 0.16 : 0.4;
+      if (outer > 1 + (noise(c / 2.2, r / 1.1, 5) - 0.5) * rough) continue;
+      // The drooping edges end raggedly a little above the centre line.
+      if (y < cy + 0.9 * s - noise(c / 1.7, 3, 6) * 1.6 * s) continue;
+      // Under the inner arc there are only a few stray leaves, thinning out with distance.
+      const inner = (x / a2) ** 2 + ((y - cy) / b2) ** 2;
+      if (inner < 1 && (inner < 0.7 || n > ((inner - 0.7) / 0.3) * 0.3)) continue;
 
-      const nx = (c - near.c) / near.rx;
-      const ny = (r - near.r) / near.ry;
+      // How far up through the shell this cell sits: 0 on the underside, 1 on top.
+      const under = Math.abs(x) < a2 ? cy + b2 * Math.sqrt(1 - (x / a2) ** 2) : cy;
+      const over = cy + b * Math.sqrt(Math.max(0, 1 - (x / a) ** 2));
+      const u = Math.min(1, Math.max(0, (y - under) / Math.max(0.5, over - under)));
+      const nx = x / a;
+      const ny = (y - cy) / b;
       const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
-      let v = 0.34 + 0.55 * (nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]);
-      v -= (1 - nz) * 0.18; // each clump darkens towards its rim
-      v += near.depth;
-      v += ((bottom - r) / Math.max(1, bottom - top) - 0.5) * 0.22; // the top of the crown catches more light
-      v -= Math.max(0, 1 - Math.abs(d1 - d2) * 2.5) * 0.3; // the crease where two clumps meet
-      v += (hash(r, c, 4) - 0.5) * 0.16;
+      let v = 0.14 + 0.34 * (nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]) + 0.48 * u;
+      v += (noise(c / 3.4, r / 1.7, 7) - 0.5) * 0.42; // clumps of foliage
+      v += (hash(r, c, 4) - 0.5) * 0.14;
       v = Math.min(1, Math.max(0, v));
 
-      const gap = d1 > 0.72 ? n < 0.3 : n < 0.03 + 0.3 * (1 - v) ** 3;
+      const gap = outer > 0.88 ? n < 0.12 : n < 0.02 + 0.22 * (1 - v) ** 3;
       if (gap) continue;
-      // Limbs show through the shaded underside of the crown.
+      // Branches show through the shaded underside.
       if (branches[r][c] && v < 0.42) continue;
 
       const [tone, chars] = RAMP[Math.min(RAMP.length - 1, Math.floor(v * RAMP.length))];
@@ -251,9 +262,9 @@ function cellsOf(g: Grid): Cell[] {
   return out;
 }
 
-type Age = { s: number; levels: number; clumps: Clump[]; widths: number[]; roots: [string, string]; grass?: boolean };
+type Age = { s: number; levels: number; widths: number[]; roots: [string, string]; grass?: boolean };
 
-function tree({ s, levels, clumps, widths, roots, grass }: Age): Grid {
+function tree({ s, levels, widths, roots, grass }: Age): Grid {
   const g = blank();
   const wood = blank();
   const height = Math.round(TRUNK * s);
@@ -262,10 +273,9 @@ function tree({ s, levels, clumps, widths, roots, grass }: Age): Grid {
     if (limb.level > levels) continue;
     const tone: Tone = limb.level === 3 ? "twig" : limb.level === 2 ? "bark1" : "bark0";
     line(wood, scale(limb.from), scale(limb.to), tone);
-    if (limb.thick && s > 0.6) line(wood, scale(limb.from), scale([(limb.from[0] + limb.to[0]) / 2, (limb.from[1] + limb.to[1]) / 2]), "bark2", 1);
   }
   overlay(g, wood);
-  crown(g, clumps, s, wood);
+  dome(g, s, wood);
   trunk(g, height, widths, roots);
   if (grass) {
     for (const [dy, x, tuft] of [
@@ -295,10 +305,10 @@ function sprout(): Grid {
 }
 
 const AGES: Age[] = [
-  { s: 0.5, levels: 1, clumps: SAPLING_CLUMPS, widths: [3, 1], roots: ["_", "_"] },
-  { s: 0.72, levels: 2, clumps: YOUNG_CLUMPS, widths: [5, 3], roots: ["_.", "._"] },
-  { s: 1, levels: 3, clumps: GROWN_CLUMPS, widths: [9, 7, 5], roots: ["__.-'", "'-.__"], grass: true },
-];
+  { s: 0.5, levels: 1, widths: [1], roots: ["_", "_"] },
+  { s: 0.75, levels: 2, widths: [3, 1], roots: ["_.", "._"] },
+  { s: 1, levels: 3, widths: [7, 5, 3], roots: ["__.-'", "'-.__"], grass: true },
+]
 
 // ───── Fruit ─────
 
@@ -310,14 +320,14 @@ export const FRUIT_SCALE = 1.3;
 const ANTHROPIC = "#ec8a64";
 
 export const FRUIT: Fruit[] = [
-  { name: "opus", lab: "Anthropic", color: ANTHROPIC, r: 2, c: 22 },
-  { name: "fable", lab: "Anthropic", color: ANTHROPIC, r: 3, c: 36 },
-  { name: "gemini", lab: "Google", color: "#79a8ff", r: 6, c: 11 },
-  { name: "gpt", lab: "OpenAI", color: "#ededed", r: 5, c: 28 },
-  { name: "sonnet", lab: "Anthropic", color: ANTHROPIC, r: 7, c: 45 },
-  { name: "llama", lab: "Meta", color: "#b59cff", r: 9, c: 18 },
-  { name: "mistral", lab: "Mistral AI", color: "#ffc04d", r: 10, c: 37 },
-  { name: "deepseek", lab: "DeepSeek", color: "#5ccfe6", r: 12, c: 24 },
+  { name: "opus", lab: "Anthropic", color: ANTHROPIC, r: 4, c: 14 },
+  { name: "fable", lab: "Anthropic", color: ANTHROPIC, r: 3, c: 26 },
+  { name: "gemini", lab: "Google", color: "#79a8ff", r: 6, c: 6 },
+  { name: "gpt", lab: "OpenAI", color: "#ededed", r: 4, c: 41 },
+  { name: "sonnet", lab: "Anthropic", color: ANTHROPIC, r: 6, c: 46 },
+  { name: "llama", lab: "Meta", color: "#b59cff", r: 8, c: 2 },
+  { name: "mistral", lab: "Mistral AI", color: "#ffc04d", r: 8, c: 50 },
+  { name: "deepseek", lab: "DeepSeek", color: "#5ccfe6", r: 5, c: 24 },
 ]
 
 /** How many grid columns a fruit's label covers, at its larger size. */
