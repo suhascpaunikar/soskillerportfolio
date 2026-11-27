@@ -262,6 +262,11 @@ function Footer() {
   return (
     <footer className={cn(WRAP, "pt-16 lg:pt-24")}>
       <SiliconGarden />
+      <div className="mt-6 text-center">
+        <Link href="/lab/silicon-garden" className={cn("text-[#c8f542] underline underline-offset-4", MONO)}>
+          Explore the 3D Silicon Garden
+        </Link>
+      </div>
       <p className={cn("m-0 pb-8 pt-14 text-center text-white/35", MONO)}>© 2026 suhas paunikar · designed and built with claude code</p>
     </footer>
   );
