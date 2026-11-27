@@ -3,7 +3,7 @@ const canvas = $('#garden'), ctx = canvas.getContext('2d'), scene = $('#scene');
 const reduceQuery = matchMedia('(prefers-reduced-motion: reduce)');
 let reduced = reduceQuery.matches;
 let pointRenderer=null;
-let tuning = { tree: {}, wafer: {}, motion: {} };
+let tuning = { tree: {}, wafer: {}, motion: {}, camera: {} };
 globalThis.window?.addEventListener('silicon-scene-settings', event => {
  tuning = event.detail;
  requestDraw();
@@ -22,7 +22,8 @@ function announce(message){$('#announcement').textContent=message;}
 function requestDraw(){dirty=true;if(!raf)raf=requestAnimationFrame(frame);}
 function resize(){const box=scene.getBoundingClientRect();width=box.width;height=box.height;dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);unit=Math.min(width/710,height/560);requestDraw();}
 new ResizeObserver(resize).observe(scene);
-function project(x,y,z){const xx=x*Math.cos(yaw)+z*Math.sin(yaw),zz=-x*Math.sin(yaw)+z*Math.cos(yaw);return{x:width*.5+xx*unit*zoom,y:height*.73+(-y*Math.cos(elevation)+zz*Math.sin(elevation))*unit*zoom,z:zz*Math.cos(elevation)+y*Math.sin(elevation)};}
+function viewScale(){return unit*zoom*(tuning.camera?.macro ?? 1.15);}
+function project(x,y,z){const xx=x*Math.cos(yaw)+z*Math.sin(yaw),zz=-x*Math.sin(yaw)+z*Math.cos(yaw);return{x:width*.5+xx*viewScale(),y:height*.73+(-y*Math.cos(elevation)+zz*Math.sin(elevation))*viewScale(),z:zz*Math.cos(elevation)+y*Math.sin(elevation)};}
 // The wafer is a procedural circuit texture, projected as a real plane in 3D.
 const texture=document.createElement('canvas');texture.width=texture.height=1200;const tc=texture.getContext('2d');
 function makeWafer(){
@@ -40,6 +41,7 @@ function makeWafer(){
  tc.restore();tc.strokeStyle='#b1c4ae';tc.lineWidth=2.5;tc.beginPath();tc.arc(600,600,590,0,Math.PI*2);tc.stroke();tc.strokeStyle='#546c6d';tc.lineWidth=7;tc.beginPath();tc.arc(600,600,596,0,Math.PI*2);tc.stroke();tc.fillStyle='#0b0e0c';tc.beginPath();tc.arc(600,1196,8,0,Math.PI*2);tc.fill();tc.fillStyle='#ecf0d099';tc.font='10px monospace';tc.textAlign='center';tc.fillText('SG · 2026 · W01',600,1174);
 }
 makeWafer();
+const waferOptics=globalThis.createWaferOptics?.(texture);
 const leaves=[],wood=[];
 function line(a,b,count,seed,thickness=0){
  for(let i=0;i<count;i++){
@@ -91,18 +93,25 @@ function discPoint(x,z,offset=0){const angle=stand*Math.PI*.5;return project(x,-
 function drawWafer(now){
  const origin=discPoint(0,0),u=discPoint(282,0),v=discPoint(0,282);const ax=(u.x-origin.x)/600,ay=(u.y-origin.y)/600,bx=(v.x-origin.x)/600,by=(v.y-origin.y)/600;
  // Soft contact shadow and a thin layered silicon edge.
- if(stand<.9){const p=project(0,-5,0);ctx.save();ctx.translate(p.x,p.y);ctx.scale(1,.24);const sh=ctx.createRadialGradient(0,0,20,0,0,330*unit*zoom);sh.addColorStop(0,'#000000b0');sh.addColorStop(1,'#00000000');ctx.fillStyle=sh;ctx.fillRect(-350*unit*zoom,-350*unit*zoom,700*unit*zoom,700*unit*zoom);ctx.restore();}
+ if(stand<.9){const p=project(0,-5,0);ctx.save();ctx.translate(p.x,p.y);ctx.scale(1,.24);const sh=ctx.createRadialGradient(0,0,20,0,0,330*viewScale());sh.addColorStop(0,'#000000b0');sh.addColorStop(1,'#00000000');ctx.fillStyle=sh;ctx.fillRect(-350*viewScale(),-350*viewScale(),700*viewScale(),700*viewScale());ctx.restore();}
  ctx.save();ctx.transform(ax,ay,bx,by,origin.x-600*ax-600*bx,origin.y-600*ay-600*by+3*unit);ctx.fillStyle='#2b3736';ctx.beginPath();ctx.arc(600,600,597,0,Math.PI*2);ctx.fill();ctx.restore();
- ctx.save();ctx.transform(ax,ay,bx,by,origin.x-600*ax-600*bx,origin.y-600*ay-600*by);ctx.drawImage(texture,0,0);
- // A restrained moving spectral reflection over the etched die grid.
- if(!reduced){ctx.globalCompositeOperation='screen';ctx.globalAlpha=tuning.wafer.shimmer ?? .13;let gl=ctx.createLinearGradient(0,0,1200,1200);gl.addColorStop(0,`hsl(${175+Math.sin(now*.0002)*35} 80% 60%)`);gl.addColorStop(.5,'#ffffff00');gl.addColorStop(1,'#bf9e65');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(600,600,586,0,Math.PI*2);ctx.fill();ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;}
+ ctx.save();ctx.transform(ax,ay,bx,by,origin.x-600*ax-600*bx,origin.y-600*ay-600*by);const facing = Math.min(1, Math.abs(ax*by-ay*bx)*600*600/(282*viewScale())**2);
+ const camera = tuning.camera ?? {};
+ const opticalTexture = waferOptics?.(facing, Math.sin(yaw)*.65, {
+  phase: reduced ? 0 : Math.floor(now/120)%72,
+  foil: (tuning.wafer.shimmer ?? .13)*6.5,
+  depth: camera.depth ?? .62,
+  grain: camera.grain ?? .09,
+  bloom: camera.bloom ?? .32,
+ }) ?? texture;
+ ctx.drawImage(opticalTexture,0,0,1200,1200);
  if(growth>.1){const shade=ctx.createRadialGradient(600,570,10,600,570,340*growth);shade.addColorStop(0,'#061005a0');shade.addColorStop(1,'#06100500');ctx.fillStyle=shade;ctx.fillRect(0,0,1200,1200);}
  let elapsed=now-waterAt; if(!reduced&&elapsed<1500)for(let i=0;i<2;i++){let t=(elapsed-300-i*190)/950;if(t>0&&t<1){ctx.strokeStyle=`rgba(171,225,214,${(1-t)*.8})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(600,600,500*t,0,Math.PI*2);ctx.stroke();}}
  ctx.restore();
 }
 function drawTree(now){
- const rendered=pointRenderer?.draw({width,height,dpr,stage,growth,yaw,elevation,scale:unit*zoom,time:reduced?0:now*.001,reduced,style:tuning.tree,sway:tuning.motion.sway ?? 1});
- if(growth<.01||(rendered&&stage>=2))return;const u=unit*zoom;const points=[];if(stage===1&&growth<.18){for(let y=0;y<39;y+=6){const p=project(0,y,0);points.push({...p,ch:'|',color:'#b7db80',size:12});}for(let leaf of sprout){const p=project(leaf.x,leaf.y,leaf.z);points.push({...p,ch:leaf.ch,color:'#c8f58a',size:12});}}else{
+ const rendered=pointRenderer?.draw({width,height,dpr,stage,growth,yaw,elevation,scale:viewScale(),time:reduced?0:now*.001,reduced,style:tuning.tree,sway:tuning.motion.sway ?? 1});
+ if(growth<.01||(rendered&&stage>=2))return;const u=viewScale();const points=[];if(stage===1&&growth<.18){for(let y=0;y<39;y+=6){const p=project(0,y,0);points.push({...p,ch:'|',color:'#b7db80',size:12});}for(let leaf of sprout){const p=project(leaf.x,leaf.y,leaf.z);points.push({...p,ch:leaf.ch,color:'#c8f58a',size:12});}}else{
  const reveal=reduced?1:clamp((now-stageAt)/850);for(const point of wood){if(stage<3&&point.y>260)continue;let p=project(point.x*growth,point.y*growth,point.z*growth);points.push({...p,ch:point.ch,color:`hsl(${62+point.tone*12} 23% ${39+point.tone*23}%)`,size:10,alpha:1});}
  for(const point of leaves){if(reveal<1&&hash(Math.round(point.x),Math.round(point.z),3)>reveal+.2)continue;const p=project(point.x*growth,point.y*growth,point.z*growth);const light=clamp(.5-point.x/850+point.y/900+point.tone*.2);points.push({...p,ch:point.ch,color:`hsl(${77+point.tone*17} ${37+point.tone*24}% ${25+light*36-point.layer*9}%)`,size:11.5,alpha:point.layer ? .58+point.tone*.22 : .8+point.tone*.2});}
  }
@@ -156,7 +165,7 @@ $('#water').addEventListener('click',water);$('#bloom').addEventListener('click'
 function changeZoom(delta){zoom=clamp(zoom+delta,.65,1.45);requestDraw();}$('#zoomIn').addEventListener('click',()=>changeZoom(.1));$('#zoomOut').addEventListener('click',()=>changeZoom(-.1));
 $('#spin').addEventListener('click',()=>{spin=!spin;if(reduced){spin=false;announce('Automatic motion is off because reduced motion is enabled.');}$('#spin').setAttribute('aria-pressed',String(spin));$('#spin').setAttribute('aria-label',`${spin?'Stop':'Start'} automatic rotation`);requestDraw();});
 canvas.addEventListener('pointerdown',e=>{pointer={id:e.pointerId,x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY};moved=false;canvas.setPointerCapture(e.pointerId);});canvas.addEventListener('pointermove',e=>{if(!pointer||pointer.id!==e.pointerId)return;const dx=e.clientX-pointer.x,dy=e.clientY-pointer.y;if(Math.hypot(e.clientX-pointer.startX,e.clientY-pointer.startY)>5)moved=true;yaw+=dx*.008;elevation=clamp(elevation+dy*.005,-.12,1.15);pointer.x=e.clientX;pointer.y=e.clientY;requestDraw();});
-canvas.addEventListener('pointerup',e=>{if(!pointer||pointer.id!==e.pointerId)return;if(!moved&&stage<4){const r=canvas.getBoundingClientRect(),p=discPoint(0,0);if(Math.hypot(e.clientX-r.left-p.x,e.clientY-r.top-p.y)<285*unit*zoom)water();}pointer=null;requestDraw();});canvas.addEventListener('pointercancel',()=>pointer=null);
+canvas.addEventListener('pointerup',e=>{if(!pointer||pointer.id!==e.pointerId)return;if(!moved&&stage<4){const r=canvas.getBoundingClientRect(),p=discPoint(0,0);if(Math.hypot(e.clientX-r.left-p.x,e.clientY-r.top-p.y)<285*viewScale())water();}pointer=null;requestDraw();});canvas.addEventListener('pointercancel',()=>pointer=null);
 canvas.addEventListener('wheel',e=>{e.preventDefault();changeZoom(-e.deltaY*.001);},{passive:false});canvas.addEventListener('keydown',e=>{let used=true;switch(e.key){case'ArrowLeft':yaw-=.15;break;case'ArrowRight':yaw+=.15;break;case'ArrowUp':elevation=clamp(elevation-.1,-.12,1.15);break;case'ArrowDown':elevation=clamp(elevation+.1,-.12,1.15);break;case'+':case'=':changeZoom(.1);break;case'-':changeZoom(-.1);break;case'Home':resetCamera();break;default:used=false;}if(used){e.preventDefault();requestDraw();}});
 const dialog=$('#notes');$('#about').addEventListener('click',()=>dialog.showModal());$('#closeNotes').addEventListener('click',()=>dialog.close());dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
 reduceQuery.addEventListener('change',e=>{reduced=e.matches;if(reduced){spin=false;$('#spin').setAttribute('aria-pressed','false');$('#spin').setAttribute('aria-label','Start automatic rotation');growth=targetGrowth;if(stage)stand=0;}requestDraw();});document.addEventListener('visibilitychange',()=>{if(!document.hidden)requestDraw();});
