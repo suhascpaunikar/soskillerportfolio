@@ -51,7 +51,7 @@
   gl_PointSize=max(1.0,pointSize*pixelRatio*(.85+seed*.3));tint=color*brightness;
  }`;
  const fragment=`precision mediump float;varying vec3 tint;uniform float alpha;void main(){gl_FragColor=vec4(tint,alpha);}`;
- function create(canvas,leaves,wood,hash){
+ function create(canvas,leaves,wood,hash,silver){
   const gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false});
   if(!gl)return null;
   let ready=false,program,buffers,attrs,uniforms;
@@ -61,8 +61,11 @@
    if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));
    attrs={};for(const name of ['position','color','seed'])attrs[name]=gl.getAttribLocation(program,name);
    uniforms={};for(const name of ['viewport','rotation','scale','growth','time','motion','pixelRatio','pointSize','alpha','brightness'])uniforms[name]=gl.getUniformLocation(program,name);
-   const data=geometry(leaves,wood,hash);buffers={};
-   for(const [name,values] of Object.entries(data)){const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,values,gl.STATIC_DRAW);buffers[name]={buffer,count:values.length/7};}
+   buffers={};
+   for (const [variation,data] of Object.entries({silver,filament:geometry(leaves,wood,hash)})) {
+   buffers[variation]={};
+   for(const [name,values] of Object.entries(data)){const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,values,gl.STATIC_DRAW);buffers[variation][name]={buffer,count:values.length/7};}
+   }
    ready=true;
   }
   try{initialize();}catch(error){console.warn('Point renderer unavailable; using canvas fallback.',error);return null;}
@@ -78,13 +81,15 @@
    gl.uniform2f(uniforms.viewport,o.width,o.height);gl.uniform2f(uniforms.rotation,o.yaw,o.elevation);
    for(const [name,value] of Object.entries({scale:o.scale,growth:o.growth,time:o.time,motion:o.reduced?0:o.sway,brightness:o.style.brightness ?? 1,pixelRatio:o.dpr,pointSize:Math.max(.7,Math.min(1.55,o.scale*1.15))*(o.style.pointSize ?? 1)}))gl.uniform1f(uniforms[name],value);
    function render(name,mode,alpha){
-    const b=buffers[name];gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);
+    const b=buffers[o.variation][name];gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);
     for(const [name,size,offset] of [['position',3,0],['color',3,12],['seed',1,24]]){gl.enableVertexAttribArray(attrs[name]);gl.vertexAttribPointer(attrs[name],size,gl.FLOAT,false,28,offset);}
     gl.uniform1f(uniforms.alpha,alpha);gl.drawArrays(mode,0,b.count);
    }
    gl.disable(gl.BLEND);render('points',gl.POINTS,1);
    gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
-   render('links',gl.LINES,o.style.linkOpacity ?? .13);render('hairs',gl.LINES,o.style.filamentOpacity ?? .35);return true;
+   const silver = o.variation === 'silver';
+   render('links',gl.LINES,Math.min(1,(o.style.linkOpacity ?? .13)*(silver?4:1)));
+   render('hairs',gl.LINES,Math.min(1,(o.style.filamentOpacity ?? .35)*(silver?2:1)));return true;
   }
   return {draw};
  }

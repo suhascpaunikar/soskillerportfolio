@@ -13,7 +13,7 @@
     varying vec2 uv;
     uniform sampler2D etched;
     uniform vec2 tilt;
-    uniform float phase, foil, depth, grain, bloom;
+    uniform float phase, foil, depth, grain, bloom, silver;
     float holoHash(vec2 p) {
       vec3 p3 = fract(vec3(p.xyx) * .1031);
       p3 += dot(p3, p3.yzx + 33.33);
@@ -38,6 +38,16 @@
       float specular = exp(-pow((normalUv.x + normalUv.y * .58 + tilt.x * .48 - .24) * 5., 2.));
       vec3 silicon = texture2D(etched, vec2(p.x, 1. - p.y)).rgb;
       float etch = dot(silicon, vec3(.2126,.7152,.0722));
+      if (silver > .5) {
+        vec2 die = fract(p * 18.);
+        vec2 seamWidth = min(die, 1.-die);
+        float seam = 1.-smoothstep(.008,.028,min(seamWidth.x,seamWidth.y));
+        float band = normalUv.x + normalUv.y*.62 + tilt.y*.24;
+        float strip = exp(-pow((abs(band)-.40)*10.,2.));
+        float brushed = .5+.5*sin(p.x*2100.+p.y*160.);
+        float value = .045+.1*etch+.046*brushed + .27*strip*(.55+foil*.45);
+        return vec3(value + seam*(.075+.19*strip) + glint*.16);
+      }
       vec3 metal = vec3(.09,.11,.14) + silicon * .34;
       return metal + spectrum * foil * (.13 + .58 * etch) *
           (.58 + .4 * fresnel + .52 * specular + 1.7 * glint);
@@ -59,7 +69,7 @@
       color += highlights * bloom;
       color += (holoHash(gl_FragCoord.xy + vec2(phase * 17., phase * 31.)) - .5) * grain;
       float edge = smoothstep(.482,.493,rim);
-      color = mix(color, vec3(.19,.24,.26) + color * .3, edge);
+      color = mix(color, mix(vec3(.19,.24,.26) + color * .3,vec3(.55)+color*.32,silver), edge);
       gl_FragColor = vec4(color,mask);
     }`;
 
@@ -96,7 +106,7 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture);
-    const locations = Object.fromEntries(['tilt','phase','foil','depth','grain','bloom'].map(
+    const locations = Object.fromEntries(['tilt','phase','foil','depth','grain','bloom','silver'].map(
       name => [name, gl.getUniformLocation(program, name)]));
     let previous = '';
     return function draw(facing, direction, settings) {
