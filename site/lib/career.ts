@@ -200,7 +200,7 @@ export const experiments: Experiment[] = [
   { id: "yt", short: "YT × Maps", title: "YouTube × Google Maps", line: "Liked a place while watching a video? Save it straight to Google Maps.", when: "≈ MID 2024", s: at(2024, 5), e: at(2024, 11), approx: true, href: "/lab" },
   { id: "noon", short: "Noon AI", title: "Noon AI Search", line: "Type what you need, and AI builds your shopping list.", when: "≈ MID 2025", s: at(2025, 3), e: at(2025, 8), approx: true, href: "/lab" },
   { id: "fidle", short: "Fidle.app", title: "Fidle.app", line: "A visual-effects playground, vibe-coded with Claude Code. Copy, embed and go in Framer.", when: "≈ 2026", s: at(2026, 3), e: at(2026, 10), approx: true, href: "/lab" },
-  { id: "silicon-garden", short: "Silicon Garden", title: "Silicon Garden", line: "Grow a 3D particle tree from a silicon wafer, harvest its fruit, and tune the scene with Toolcraft.", when: "NOV 2026", s: at(2026, 11), e: TOTAL, href: "/lab/silicon-garden" },
+  { id: "silicon-garden", short: "Silicon Garden", title: "Silicon Garden", line: "Grow a 3D tree of silver roots and blue-white light from a holographic silicon wafer.", when: "NOV 2026", s: at(2026, 11), e: TOTAL, href: "/lab/silicon-garden" },
 ];
 
 export const EMAIL = "paunikarsuhas@gmail.com";

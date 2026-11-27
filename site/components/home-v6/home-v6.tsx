@@ -3,7 +3,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { CopyEmail } from "@/components/home-v3/copy-email";
-import { SiliconGarden } from "@/components/home-v6/silicon-garden";
 import { CartArt, MarkerArt } from "@/components/home/work";
 import { VersionSwitch } from "@/components/versions/switch";
 import { EMAIL, experiments } from "@/lib/career";
@@ -257,11 +256,9 @@ function Contact() {
   );
 }
 
-/** A bare wafer that grows a tree of models when watered. */
 function Footer() {
   return (
     <footer className={cn(WRAP, "pt-16 lg:pt-24")}>
-      <SiliconGarden />
       <div className="mt-6 text-center">
         <Link href="/lab/silicon-garden" className={cn("text-[#c8f542] underline underline-offset-4", MONO)}>
           Explore the 3D Silicon Garden
