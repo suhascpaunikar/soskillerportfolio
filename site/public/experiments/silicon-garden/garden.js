@@ -15,10 +15,10 @@ const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
 const mix=(a,b,t)=>a+(b-a)*t;
 const smooth=t=>t*t*(3-2*t);
 let width=0,height=0,unit=1,dpr=1,stage=4,growth=1,fromGrowth=1,targetGrowth=1,growAt=0,stageAt=0,stand=0,standFrom=0,standAt=0,busy=false,waterAt=-10000,waterTimer=0,unlockTimer=0,spin=false,yaw=-.14,elevation=.29,zoom=1,lastTime=0,raf=0,pointer=null,moved=false,dirty=true;
-const scales=[0,.15,.48,.74,1];
+const growthMilestones=[0,.15,.48,.74,1];
 const labels=['water it','a little more','keep going','one last drop','in bloom'];
-const descriptions=['Every ecosystem<br>starts somewhere.','A small beginning.<br>A world of potential.','Taking root.<br>Reaching further.','A little patience.<br>A little possibility.','Intelligence blooms.<br>Branch tips glow.'];
-const announcements=['','A sprout breaks through the silicon.','It grows into a sapling.','It is a young tree now.','Fully grown. Silver roots rise into blue-white branches.'];
+const descriptions=['Every ecosystem<br>starts somewhere.','Three leaves unfold<br>on the first stem.','Two side shoots<br>put out leaves.','New forks spread<br>from the trunk.','Intelligence blooms.<br>Branch tips glow.'];
+const announcements=['','Three leaves unfold on the sapling.','The sapling grows two side branches.','New forks extend and the first crown opens.','Fully grown. Silver roots rise into blue-white branches.'];
 function announce(message){$('#announcement').textContent=message;}
 function requestDraw(){dirty=true;if(!raf)raf=requestAnimationFrame(frame);}
 function resize(){const box=scene.getBoundingClientRect();width=box.width;height=box.height;dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);unit=Math.min(width/710,height/560);requestDraw();}
@@ -61,6 +61,9 @@ function spine(limb, t) {
  };
 }
 for (const [branch, limb] of limbs.entries()) {
+ // The leader and first lateral limbs extend before the later forks.
+ const start = [.49,.53,.57,.48,.55,.60,.64,.67,.69,.72][branch];
+ const extension = .20;
  for (let strand = 0; strand < 9; strand++) {
   const id = branch * 9 + strand;
   const phase = hash(id, 8) * Math.PI * 2;
@@ -77,32 +80,32 @@ for (const [branch, limb] of limbs.entries()) {
     y: center.y + 1.3,
     z: center.z + flare * Math.sin(rootAngle) + radius * Math.sin(twist),
     tone: hash(id, 3), previous,
+    birth: start + .004*strand + extension*Math.max(t,flare/139*.52),
    };
    wood.push(p);
-   previous = [p.x, p.y, p.z];
+   previous = [p.x, p.y, p.z, p.birth];
   }
  }
  // Sparse, staggered scan lines trace each limb and divide into smaller sprays.
  for (let spray = 0; spray < 7; spray++) {
   const id = branch * 7 + spray;
   const azimuth = hash(id, 16) * Math.PI * 2;
-  const start = .53 + .28 * hash(id, 4);
+  const junction = .53 + .28 * hash(id, 4);
   const reach = spray === 0 ? 0 : 14 + 37 * hash(id, 18);
   for (let row = 0; row < 42; row++) {
    if (hash(id, row, 80) < .16) continue;
-   const t = row / 41, center = spine(limb, start + (1 - start) * t);
+   const t = row / 41, center = spine(limb, junction + (1 - junction) * t);
    const width = 2 + 12 * Math.sin(Math.PI * t) + 9 * hash(id, row, 19);
    const offset = reach * t * t + 6 * Math.sin(t * 5 + azimuth) * t;
    const x = center.x + Math.cos(azimuth) * offset;
    const y = center.y + (spray ? 21 * Math.sin(t * Math.PI) - 18 * t : 0);
    const z = center.z + Math.sin(azimuth) * offset;
    leaves.push({ x, y, z, width, azimuth: .32 * Math.sin(azimuth) + branch * .13,
-    tone: hash(id, row, 23), accent: hash(id, row, 25) });
+    tone: hash(id, row, 23), accent: hash(id, row, 25),
+    birth: start + extension * (junction + (1-junction)*t) + .030 + .033*t + .008*spray/7 });
   }
  }
 }
-const sprout=[];
-for(let side of [-1,1])for(let i=0;i<14;i++){let t=i/13*Math.PI; sprout.push({x:side*(3+19*Math.sin(t)),y:37+9*Math.cos(t),z:Math.sin(t)*side*5,ch:'()/\\,.'[i%6]});}
 const silverGeometry = buildSilverCanopy(hash);
 if(globalThis.SiliconPointTree){
  const pointCanvas=document.createElement('canvas');pointCanvas.className='point-tree';pointCanvas.setAttribute('aria-hidden','true');scene.append(pointCanvas);
@@ -136,6 +139,102 @@ function drawWafer(now){
  let elapsed=now-waterAt; if(!reduced&&elapsed<1500)for(let i=0;i<2;i++){let t=(elapsed-300-i*190)/950;if(t>0&&t<1){ctx.strokeStyle=`rgba(171,225,214,${(1-t)*.8})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(600,600,500*t,0,Math.PI*2);ctx.stroke();}}
  ctx.restore();
 }
+// Cotyledons and the first lateral shoots have their own attachment points and
+// growth intervals. The mature tree takes over as bark forms around the leader.
+function youngPlant(progress, variety) {
+ const unfold = (start,end) => smooth(clamp((progress-start)/(end-start)));
+ const height = 50*unfold(0,.1) + 72*unfold(.15,.45) + 28*unfold(.48,.65);
+ const leader = y => variety==='silver'
+  ? [12*(y/269)**2,y,-8*(y/269)**2]
+  : [15*Math.sin(6.1*y/320),y,9*Math.sin(7*y/320)];
+ const shoots = [], blades = [];
+ function blade(base, angle, length, opening) {
+  if(opening>0) blades.push({base,angle,length,opening});
+ }
+ for(const [y,angle,length,start,end] of [[23,3.27,25,.055,.115],[33,.26,22,.075,.135],[43,1.65,15,.10,.15]]) {
+  blade(leader(y),angle,length,unfold(start,end));
+ }
+ // Young leaves also break at the leader's tip after the side shoots extend.
+ blade(leader(113),.78,15,unfold(.405,.47));
+ blade(leader(119),3.48,12,unfold(.43,.48));
+ const forks = variety==='silver'
+  ? [[15,[-52,67,-15]],[18,[64,58,29]]]
+  : [[53,[-39,145,12]],[68,[42,165,-20]]];
+ for(const [i,[y,tip]] of forks.entries()) {
+  const start=.18+.08*i, end=.39+.065*i, extent=unfold(start,end);
+  if(extent===0)continue;
+  const base=leader(y);
+  const path=t=>[mix(base[0],tip[0],t*t),mix(y,tip[1],t),mix(base[2],tip[2],t*t)];
+  shoots.push({path,extent});
+  for(const [j,fraction] of [.48,.78,.96].entries()){
+   if(extent<=fraction)continue;
+   const opening=smooth(clamp((extent-fraction)/Math.min(.17,1-fraction)));
+   blade(path(fraction),i*3.1+j*2.3,12+j*1.7,opening);
+  }
+ }
+ return {height,leader,shoots,blades,opacity:1-unfold(.62,.86)};
+}
+function drawYoungPlant(){
+ if(growth<=0 || growth>=.86)return;
+ const plant=youngPlant(growth,variation), u=viewScale(), silver=variation==='silver';
+ ctx.save();
+ ctx.globalAlpha=plant.opacity;
+ ctx.filter=`brightness(${tuning.tree.brightness ?? 1})`;
+ ctx.lineCap='round';ctx.lineJoin='round';
+ function stroke(path,extent,width){
+  ctx.lineWidth=Math.max(.55,width*u);
+  ctx.strokeStyle=silver?'#dbdfd4':'#bbcca3';
+  ctx.beginPath();
+  for(let i=0;i<=18;i++){
+   const p=project(...path(extent*i/18));
+   if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);
+  }
+  ctx.stroke();
+ }
+ stroke(plant.leader,plant.height,1.6+growth*2);
+ for(const shoot of plant.shoots)stroke(shoot.path,shoot.extent,1.4);
+ for(const {base,angle,length,opening} of plant.blades){
+  const reach=length*opening, dx=Math.cos(angle), dz=Math.sin(angle);
+  function surface(t,side){
+   const arch=Math.sin(Math.PI*t), width=side*reach*.25*arch*opening;
+   return project(base[0]+reach*t*dx-width*dz,
+    base[1]+reach*(t*(1.25-.81*opening)+.25*arch)-.32*Math.abs(width),
+    base[2]+reach*t*dz+width*dx);
+  }
+  // A fine dark cuticle keeps the pale blade readable over bright wafer cells.
+  ctx.beginPath();
+  for(let i=0;i<=12;i++){const p=surface(i/12,-1);if(!i)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);}
+  for(let i=12;i>=0;i--){const p=surface(i/12,1);ctx.lineTo(p.x,p.y);}
+  ctx.closePath();ctx.strokeStyle='#27382f';ctx.lineWidth=Math.max(.75,u);ctx.stroke();
+  for(const side of [-1,1]){
+   ctx.beginPath();
+   for(let i=0;i<=12;i++){
+    const p=surface(i/12,side);
+    if(!i)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);
+   }
+   for(let i=12;i>=0;i--){const p=surface(i/12,0);ctx.lineTo(p.x,p.y);}
+   ctx.closePath();
+   ctx.fillStyle=silver?(side<0?'#ccd8ca':'#81998b'):(side<0?'#bfdf98':'#73995f');
+   ctx.fill();
+  }
+  ctx.beginPath();
+  for(let i=0;i<=12;i++){const p=surface(i/12,0);if(!i)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);}
+  ctx.strokeStyle=silver?'#eef6e9':'#e2f4c6';ctx.lineWidth=Math.max(.55,u*.75);ctx.stroke();
+ }
+ ctx.restore();
+}
+// Match the GPU's interpolated birth time for a line whose growing tip lies
+// between samples. Completed segments keep their original world coordinates.
+function growingLine(ax,ay,az,start,bx,by,bz,end){
+ if(growth<Math.min(start,end))return;
+ if(growth<Math.max(start,end)){
+  const t=(growth-start)/(end-start);
+  const x=mix(ax,bx,t),y=mix(ay,by,t),z=mix(az,bz,t);
+  if(start>end){ax=x;ay=y;az=z;}else{bx=x;by=y;bz=z;}
+ }
+ const a=project(ax,ay,az),b=project(bx,by,bz);
+ ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+}
 function drawSilverFallback() {
  const tree = tuning.tree;
  ctx.save();
@@ -146,17 +245,16 @@ function drawSilverFallback() {
   const data=silverGeometry[name];
   ctx.globalAlpha=Math.min(1,opacity);
   ctx.beginPath();
-  for(let i=0;i<data.length;i+=14) {
-   const a=project(data[i]*growth,data[i+1]*growth,data[i+2]*growth);
-   const b=project(data[i+7]*growth,data[i+8]*growth,data[i+9]*growth);
-   ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+  for(let i=0;i<data.length;i+=16) {
+   growingLine(data[i],data[i+1],data[i+2],data[i+7],data[i+8],data[i+9],data[i+10],data[i+15]);
   }
   ctx.stroke();
  }
  const points=silverGeometry.points, size=Math.max(.65,viewScale()*(tree.pointSize ?? 1));
  ctx.globalAlpha=.84;
- for(let i=0;i<points.length;i+=7) {
-  const p=project(points[i]*growth,points[i+1]*growth,points[i+2]*growth);
+ for(let i=0;i<points.length;i+=8) {
+  if(growth<points[i+7])continue;
+  const p=project(points[i],points[i+1],points[i+2]);
   ctx.fillRect(p.x,p.y,size,size);
  }
  ctx.restore();
@@ -183,24 +281,10 @@ function drawRootReflection(){
 }
 function drawTree(now){
  const rendered=pointRenderer?.draw({variation,width,height,dpr,stage,growth,yaw,elevation,scale:viewScale(),time:reduced?0:now*.001,reduced,style:tuning.tree,sway:tuning.motion.sway ?? 1});
- if (growth < .01 || (rendered && stage >= 2)) return;
- if (variation === 'silver' && stage >= 2) {drawSilverFallback();return;}
+ drawYoungPlant();
+ if (growth <= .48 || rendered) return;
+ if (variation === 'silver') {drawSilverFallback();return;}
  const u = viewScale();
- if (stage === 1) {
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = `${Math.max(5.5,12*u)}px "DM Mono",monospace`;
-  ctx.fillStyle = '#b7db80';
-  for (let y = 0; y < 39; y += 6) {
-   const p = project(0,y,0);
-   ctx.fillText('|',p.x,p.y);
-  }
-  for (const leaf of sprout) {
-   const p = project(leaf.x,leaf.y,leaf.z);
-   ctx.fillText(leaf.ch,p.x,p.y);
-  }
-  return;
- }
  const tree = tuning.tree;
  ctx.save();
  ctx.filter = `brightness(${tree.brightness ?? 1})`;
@@ -209,9 +293,7 @@ function drawTree(now){
   ctx.beginPath();
   for (const p of wood) {
    if (!p.previous || p.y < low || p.y >= high) continue;
-   const [x,y,z] = p.previous;
-   const a = project(x*growth,y*growth,z*growth), b = project(p.x*growth,p.y*growth,p.z*growth);
-   ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+   growingLine(...p.previous,p.x,p.y,p.z,p.birth);
   }
   ctx.globalAlpha = .22 + .6 * (tree.filamentOpacity ?? .35);
   ctx.strokeStyle = color;
@@ -221,9 +303,11 @@ function drawTree(now){
   ctx.beginPath();
   for (const p of leaves) {
    if ((p.accent > .975 ? 3 : p.tone > .79 ? 2 : p.tone > .37 ? 1 : 0) !== band) continue;
-   const dx = p.width * Math.cos(p.azimuth), dz = p.width * Math.sin(p.azimuth);
-   const a = project((p.x-dx)*growth,p.y*growth,(p.z-dz)*growth);
-   const b = project((p.x+dx)*growth,p.y*growth,(p.z+dz)*growth);
+   if (growth < p.birth) continue;
+   const width=p.width*clamp((growth-p.birth)/.006);
+   const dx = width * Math.cos(p.azimuth), dz = width * Math.sin(p.azimuth);
+   const a = project(p.x-dx,p.y,p.z-dz);
+   const b = project(p.x+dx,p.y,p.z+dz);
    ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
   }
   ctx.globalAlpha = .35 + .65 * (tree.linkOpacity ?? .13);
@@ -247,9 +331,9 @@ function updateUI(){
  $('#waterHint').textContent=stage===4?'DRAG TO EXPLORE THE BRANCHES':'A DROP OF POSSIBILITY';
  $('#careTitle').textContent=stage===4?specimenName():'Good things take a little care.';$('#careSubtitle').textContent=stage===4?'Fully grown.':'Four waterings. One small ecosystem.';
  $('#replant').hidden=stage===0;$('#bloom').hidden=stage===4;$('#specimen').innerHTML=stage===0?'SILICON SUBSTRATE<br><span class="subtle">300 mm · pure possibility</span>':stage===4?specimenName().toUpperCase()+'<br><span class="subtle">rooted in silicon · alive in particles</span>':'LIVING SILICON<br><span class="subtle">a small ecosystem, taking root</span>';
- canvas.setAttribute('aria-label',`${['A bare silicon wafer','A small sprout on silicon','A point-cloud sapling','A young point-cloud tree','A fully grown 3D '+specimenName()][stage]}. Drag or use arrow keys to rotate. Plus and minus zoom.`);
+ canvas.setAttribute('aria-label',`${['A bare silicon wafer','A stem with three leaves','A sapling with two leafy side shoots','A young point-cloud tree','A fully grown 3D '+specimenName()][stage]}. Drag or use arrow keys to rotate. Plus and minus zoom.`);
 }
-function setStage(next){stage=next;fromGrowth=growth;targetGrowth=scales[stage];growAt=stageAt=performance.now();if(reduced)growth=targetGrowth;updateUI();announce(stage===4?specimenName()+' is fully grown.':announcements[stage]);requestDraw();}
+function setStage(next){stage=next;fromGrowth=growth;targetGrowth=growthMilestones[stage];growAt=stageAt=performance.now();if(reduced)growth=targetGrowth;updateUI();announce(stage===4?specimenName()+' is fully grown.':announcements[stage]);requestDraw();}
 function water(){if(busy||stage===4)return;busy=true;waterAt=performance.now();if(stage===0){standFrom=stand;standAt=waterAt;}updateUI();requestDraw();const first=stage===0;if(reduced){stand=0;setStage(stage+1);busy=false;updateUI();return;}waterTimer=setTimeout(()=>setStage(stage+1),first?700:390);unlockTimer=setTimeout(()=>{busy=false;updateUI();requestDraw();},first?1500:1250);}
 function clearTimers(){clearTimeout(waterTimer);clearTimeout(unlockTimer);busy=false;}
 function reset(){clearTimers();stage=0;growth=fromGrowth=targetGrowth=0;stand=standFrom=1;waterAt=-10000;resetCamera();updateUI();announce('A fresh wafer. Ready to grow.');$('#water').focus();requestDraw();}

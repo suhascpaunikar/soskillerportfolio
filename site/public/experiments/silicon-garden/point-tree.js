@@ -3,18 +3,18 @@
 (function(){
  function geometry(leaves, wood, hash) {
   const points = [], hairs = [], links = [];
-  function put(buffer, position, color, seed) {
-   buffer.push(...position, ...color, seed);
+  function put(buffer, position, color, seed, birth) {
+   buffer.push(position[0],position[1],position[2], ...color, seed, birth);
   }
   for (const [i, p] of wood.entries()) {
    const light = Math.min(1, Math.max(0, (p.y - 108) / 95));
    const shade = .28 + .7 * p.tone;
    const color = [.63 + .37 * light, .62 + .38 * light, .46 + .54 * light].map(v => v * shade);
    const position = [p.x, p.y, p.z];
-   put(points, position, color, hash(i, 0));
+   put(points, position, color, hash(i, 0), p.birth);
    if (p.previous) {
-    put(hairs, p.previous, color, p.tone);
-    put(hairs, position, color, p.tone);
+    put(hairs, p.previous, color, p.tone, p.previous[3]);
+    put(hairs, position, color, p.tone, p.birth);
    }
   }
   for (const [i, p] of leaves.entries()) {
@@ -27,30 +27,32 @@
     if (seed < .24) continue;
     const u = k / (count - 1) * 2 - 1;
     const gain = (.53 + .53 * seed) * (1 - .48 * Math.abs(u));
-    put(points, [p.x + dx*u,p.y + (seed-.5)*.9,p.z + dz*u], color.map(v=>v*gain), seed);
+    put(points, [p.x + dx*u,p.y + (seed-.5)*.9,p.z + dz*u], color.map(v=>v*gain), seed, p.birth + .006*Math.abs(u));
    }
-   put(links,[p.x-dx,p.y,p.z-dz],color,p.tone);
-   put(links,[p.x+dx,p.y,p.z+dz],color,p.tone);
+   put(links,[p.x-dx,p.y,p.z-dz],color,p.tone,p.birth+.006);
+   put(links,[p.x,p.y,p.z],color,p.tone,p.birth);
+   put(links,[p.x,p.y,p.z],color,p.tone,p.birth);
+   put(links,[p.x+dx,p.y,p.z+dz],color,p.tone,p.birth+.006);
   }
   return {points:new Float32Array(points),hairs:new Float32Array(hairs),links:new Float32Array(links)};
  }
  const vertex=`
- attribute vec3 position,color;attribute float seed;
+ attribute vec3 position,color;attribute float seed,birth;
  uniform vec2 viewport,rotation;uniform float scale,growth,time,motion,pixelRatio,pointSize,brightness;
- varying vec3 tint;
+ varying vec3 tint;varying mediump float age;
  void main(){
   vec3 p=position;float weight=smoothstep(80.0,300.0,p.y);
   float t=time;
   vec3 drift=vec3(sin(p.y*.018+t*.55)+.4*sin(p.z*.035+t*.32),sin(p.x*.021+t*.47),cos(p.y*.017+t*.42));
   p+=motion*weight*(2.5*drift+.45*vec3(sin(t*2.3+seed*90.0),cos(t*2.0+seed*70.0),sin(t*1.7+seed*50.0)));
-  p*=growth;
+  age=growth-birth;
   float cy=cos(rotation.x),sy=sin(rotation.x),ce=cos(rotation.y),se=sin(rotation.y);
   float x=p.x*cy+p.z*sy,z=-p.x*sy+p.z*cy;
   float y=-p.y*ce+z*se,depth=z*ce+p.y*se;
   gl_Position=vec4(x*scale*2.0/viewport.x,-.46-y*scale*2.0/viewport.y,-depth/900.0,1.0);
   gl_PointSize=max(1.0,pointSize*pixelRatio*(.85+seed*.3));tint=color*brightness;
  }`;
- const fragment=`precision mediump float;varying vec3 tint;uniform float alpha;void main(){gl_FragColor=vec4(tint,alpha);}`;
+ const fragment=`precision mediump float;varying vec3 tint;varying mediump float age;uniform float alpha;void main(){if(age<0.)discard;gl_FragColor=vec4(tint,alpha);}`;
  function create(canvas,leaves,wood,hash,silver){
   const gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false});
   if(!gl)return null;
@@ -59,12 +61,12 @@
    const compile=(type,source)=>{const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(shader));return shader;};
    program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vertex));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);
    if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));
-   attrs={};for(const name of ['position','color','seed'])attrs[name]=gl.getAttribLocation(program,name);
+   attrs={};for(const name of ['position','color','seed','birth'])attrs[name]=gl.getAttribLocation(program,name);
    uniforms={};for(const name of ['viewport','rotation','scale','growth','time','motion','pixelRatio','pointSize','alpha','brightness'])uniforms[name]=gl.getUniformLocation(program,name);
    buffers={};
    for (const [variation,data] of Object.entries({silver,filament:geometry(leaves,wood,hash)})) {
    buffers[variation]={};
-   for(const [name,values] of Object.entries(data)){const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,values,gl.STATIC_DRAW);buffers[variation][name]={buffer,count:values.length/7};}
+   for(const [name,values] of Object.entries(data)){const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,values,gl.STATIC_DRAW);buffers[variation][name]={buffer,count:values.length/8};}
    }
    ready=true;
   }
@@ -76,13 +78,13 @@
    const w=Math.round(o.width*o.dpr),h=Math.round(o.height*o.dpr);
    if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
    gl.viewport(0,0,w,h);gl.depthMask(true);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-   if(o.stage<2||o.growth<.01)return true;
+   if(o.growth<=.48)return true;
    gl.useProgram(program);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
    gl.uniform2f(uniforms.viewport,o.width,o.height);gl.uniform2f(uniforms.rotation,o.yaw,o.elevation);
    for(const [name,value] of Object.entries({scale:o.scale,growth:o.growth,time:o.time,motion:o.reduced?0:o.sway,brightness:o.style.brightness ?? 1,pixelRatio:o.dpr,pointSize:Math.max(.7,Math.min(1.55,o.scale*1.15))*(o.style.pointSize ?? 1)}))gl.uniform1f(uniforms[name],value);
    function render(name,mode,alpha){
     const b=buffers[o.variation][name];gl.bindBuffer(gl.ARRAY_BUFFER,b.buffer);
-    for(const [name,size,offset] of [['position',3,0],['color',3,12],['seed',1,24]]){gl.enableVertexAttribArray(attrs[name]);gl.vertexAttribPointer(attrs[name],size,gl.FLOAT,false,28,offset);}
+    for(const [name,size,offset] of [['position',3,0],['color',3,12],['seed',1,24],['birth',1,28]]){gl.enableVertexAttribArray(attrs[name]);gl.vertexAttribPointer(attrs[name],size,gl.FLOAT,false,32,offset);}
     gl.uniform1f(uniforms.alpha,alpha);gl.drawArrays(mode,0,b.count);
    }
    gl.disable(gl.BLEND);render('points',gl.POINTS,1);
