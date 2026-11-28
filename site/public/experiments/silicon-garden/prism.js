@@ -31,48 +31,45 @@ function prismCanopy(silver) {
  }
  return result;
 }
-function makePrismWafer(){
- const tile=document.createElement('canvas');tile.width=tile.height=1200;
+// Canvas fallback for the same repeated die fields and interference phase.
+// Quantize the camera only on this software path to reuse the surface between frames.
+function prismWaferFallback(){
+ const tile=document.createElement('canvas');tile.width=tile.height=960;
  const c=tile.getContext('2d');
- c.save();c.beginPath();c.arc(600,600,594,0,Math.PI*2);c.clip();
- function metal(x1,y1,x2,y2,stops){
-  const g=c.createLinearGradient(x1,y1,x2,y2);
-  for(const [p,color] of stops)g.addColorStop(p,color);
-  return g;
- }
- c.fillStyle=metal(0,0,1000,1200,[[0,'#282351'],[.3,'#655397'],[.64,'#70548e'],[1,'#29234d']]);
- c.fillRect(0,0,1200,1200);
- c.lineWidth=1.4;c.strokeStyle='#d3bdff60';c.beginPath();
- for(let i=0;i<=1200;i+=39){c.moveTo(i,0);c.lineTo(i,1200);c.moveTo(0,i);c.lineTo(1200,i);}
- c.stroke();
- const gold=metal(230,150,940,1000,[[0,'#b55920'],[.24,'#ffbc39'],[.40,'#fff29a'],[.49,'#bd6b29'],[.74,'#ffcc4c'],[1,'#e48636']]);
- for(const side of [-1,1]){
-  c.save();c.translate(600,600);c.scale(1,side);
-  for(let pin=0;pin<21;pin++){
-   const t=(pin-10)/10,x=t*275,outer=t*477,y=522-152*t*t;
-   c.beginPath();c.moveTo(x,127);c.lineTo(x,184);
-   c.bezierCurveTo(x,265,outer,y-95,outer,y-25);c.lineTo(outer,y);
-   c.strokeStyle='#301c38';c.lineWidth=10;c.stroke();
-   c.strokeStyle=gold;c.lineWidth=6;c.stroke();
-   c.fillStyle=gold;c.fillRect(outer-9,y-10,18,20);
-   c.fillStyle='#80572e';c.beginPath();c.arc(outer,y,2.4,0,Math.PI*2);c.fill();
+ let previous='';
+ return function draw(facing,direction,foil){
+  const key=[facing,direction,foil].map(v=>Math.round(v*24)).join(',');
+  if(previous===key)return tile;
+  previous=key;
+  const size=tile.width,w=size/18,h=size/24;
+  c.clearRect(0,0,size,size);c.save();
+  c.beginPath();c.arc(size/2,size/2,size*.496,0,2*Math.PI);c.clip();
+  c.fillStyle='#211c31';c.fillRect(0,0,size,size);
+  for(let row=0;row<24;row++)for(let col=0;col<18;col++){
+   const x=col*w,y=row*h,u=(col+.5)/18,v=1-(row+.5)/24;
+   const seed=hash(row,col,71);
+   const phase=.96*u+.26*v+.08*Math.sin(5*v)+.32*facing+.38*direction+.04*(seed-.5);
+   const sheen=Math.exp(-(((u+.38*v+.35*direction-.85)*4.8)**2));
+   const weight=.36+.29*Math.min(1,foil);
+   const base=[.02,.69,.46].map((offset,k)=>{
+    const film=.5+.5*Math.cos(2*Math.PI*(phase+offset));
+    const oxide=[.16,.105,.26][k];
+    return oxide*(1-weight)+(.10+.73*film)*weight;
+   });
+   function color(relief){
+    const rgb=base.map((b,k)=>Math.round(255*Math.min(1,b*(.60+.20*seed+relief)+sheen*(.12+.16*foil)*[.93,.81,1][k])));
+    return 'rgb('+rgb.join(',')+')';
+   }
+   c.fillStyle=color(0);c.fillRect(x+1,y+1,w-2,h-2);
+   c.fillStyle=color(.16);c.fillRect(x+.075*w,y+.28*h,.475*w,.62*h);
+   c.fillStyle=color(-.21);c.fillRect(x+.60*w,y+.46*h,.29*w,.43*h);
+   c.fillStyle=color(.13);c.fillRect(x+.075*w,y+.09*h,.815*w,.13*h);
+   c.fillStyle='#dad1ff24';
+   for(let i=0;i<5;i++)c.fillRect(x+.075*w,y+(.32+.12*i)*h,.475*w,.7);
+   c.fillStyle='#e4b16bba';
+   for(let i=0;i<4;i++)c.fillRect(x+(.6+.067*i)*w,y+.29*h,.037*w,.10*h);
   }
-  c.restore();
- }
- // A notched package and a burnished gold die sit beneath the roots.
- c.beginPath();c.moveTo(295,422);c.lineTo(904,422);c.lineTo(904,778);c.lineTo(295,778);
- c.lineTo(295,654);c.bezierCurveTo(351,642,351,560,295,548);c.closePath();
- c.fillStyle=metal(330,420,890,800,[[0,'#172823'],[.28,'#354234'],[.42,'#655331'],[.57,'#19342f'],[1,'#293147']]);
- c.fill();c.strokeStyle='#b7a269';c.lineWidth=4;c.stroke();
- c.fillStyle=metal(453,490,715,732,[[0,'#a55924'],[.20,'#ffbf37'],[.44,'#f4ac25'],[.56,'#ffe77c'],[.61,'#c67c20'],[.82,'#fff09a'],[1,'#c27326']]);
- c.fillRect(470,481,279,237);c.strokeStyle='#fae99e';c.lineWidth=3;c.strokeRect(470,481,279,237);
- c.strokeStyle='#796635';c.lineWidth=2;
- for(let i=0;i<5;i++)c.strokeRect(346+i*13,461+(i%2)*6,8,7);
- for(const [x,y,r] of [[904,422,26],[470,718,17]]){
-  const flare=c.createRadialGradient(x,y,0,x,y,r);
-  flare.addColorStop(0,'#ffffed');flare.addColorStop(.09,'#ffebcf');flare.addColorStop(.32,'#fdd6f396');flare.addColorStop(1,'#f1aaf000');
-  c.fillStyle=flare;c.fillRect(x-r,y-r,2*r,2*r);
- }
- c.beginPath();c.arc(600,600,592,0,Math.PI*2);c.strokeStyle='#c6addf';c.lineWidth=4;c.stroke();c.restore();
- return tile;
+  c.beginPath();c.arc(size/2,size/2,size*.494,0,2*Math.PI);c.strokeStyle='#aa95b8';c.lineWidth=2;c.stroke();c.restore();
+  return tile;
+ };
 }

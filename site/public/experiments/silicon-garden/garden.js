@@ -44,8 +44,8 @@ function makeWafer(){
  tc.restore();tc.strokeStyle='#b1c4ae';tc.lineWidth=2.5;tc.beginPath();tc.arc(600,600,590,0,Math.PI*2);tc.stroke();tc.strokeStyle='#546c6d';tc.lineWidth=7;tc.beginPath();tc.arc(600,600,596,0,Math.PI*2);tc.stroke();tc.fillStyle='#0b0e0c';tc.beginPath();tc.arc(600,1196,8,0,Math.PI*2);tc.fill();tc.fillStyle='#ecf0d099';tc.font='10px monospace';tc.textAlign='center';tc.fillText('SG · 2026 · W01',600,1174);
 }
 makeWafer();
-const circuitTexture=makePrismWafer();
-const waferOptics=globalThis.createWaferOptics?.(texture,circuitTexture);
+const fallbackPrism=prismWaferFallback();
+const waferOptics=globalThis.createWaferOptics?.(texture);
 const leaves = [], wood = [];
 // Every strand runs continuously from the exposed root flare into a crown fork.
 const limbs = [
@@ -123,15 +123,16 @@ function drawWafer(now){
  ctx.save();ctx.transform(ax,ay,bx,by,origin.x-600*ax-600*bx,origin.y-600*ay-600*by+3*unit);ctx.fillStyle=variation==='silver'?'#565656':'#2b3736';ctx.beginPath();ctx.arc(600,600,597,0,Math.PI*2);ctx.fill();ctx.restore();
  ctx.save();ctx.transform(ax,ay,bx,by,origin.x-600*ax-600*bx,origin.y-600*ay-600*by);const facing = Math.min(1, Math.abs(ax*by-ay*bx)*600*600/(282*viewScale())**2);
  const camera = tuning.camera ?? {};
- const opticalTexture = waferOptics?.(facing, Math.sin(yaw)*.65, {
+ const direction=Math.sin(yaw)*.65, foil=(tuning.wafer.shimmer ?? .13)*6.5;
+ const opticalTexture = waferOptics?.(facing, direction, {
   phase: reduced ? 0 : Math.floor(now/120)%72,
-  foil: (tuning.wafer.shimmer ?? .13)*6.5,
+  foil,
   depth: camera.depth ?? .62,
   grain: camera.grain ?? .09,
   bloom: camera.bloom ?? .32,
   silver: Number(variation === "silver"),
   prism: Number(variation === "prism"),
- }) ?? (variation==='prism'?circuitTexture:texture);
+ }) ?? (variation==='prism'?fallbackPrism(facing,direction,foil):texture);
  if (variation === 'silver' && opticalTexture === texture) ctx.filter='grayscale(1) brightness(.42)';
  ctx.drawImage(opticalTexture,0,0,1200,1200);
  ctx.filter='none';
