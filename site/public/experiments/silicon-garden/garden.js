@@ -3,8 +3,10 @@ const canvas = $('#garden'), ctx = canvas.getContext('2d'), scene = $('#scene');
 const reduceQuery = matchMedia('(prefers-reduced-motion: reduce)');
 let reduced = reduceQuery.matches;
 let pointRenderer=null;
-let variation="silver";
-const specimenName=()=>variation==="silver" ? "Silver canopy" : "Filament tree";
+const variantNames={silver:"Silver canopy",filament:"Blue filament",prism:"Prism canopy"};
+const requestedVariation=globalThis.location && new URLSearchParams(location.search).get('variation');
+let variation=Object.hasOwn(variantNames,requestedVariation)?requestedVariation:'silver';
+const specimenName=()=>variantNames[variation];
 let tuning = { tree: {}, wafer: {}, motion: {}, camera: {} };
 globalThis.window?.addEventListener('silicon-scene-settings', event => {
  tuning = event.detail;
@@ -42,7 +44,8 @@ function makeWafer(){
  tc.restore();tc.strokeStyle='#b1c4ae';tc.lineWidth=2.5;tc.beginPath();tc.arc(600,600,590,0,Math.PI*2);tc.stroke();tc.strokeStyle='#546c6d';tc.lineWidth=7;tc.beginPath();tc.arc(600,600,596,0,Math.PI*2);tc.stroke();tc.fillStyle='#0b0e0c';tc.beginPath();tc.arc(600,1196,8,0,Math.PI*2);tc.fill();tc.fillStyle='#ecf0d099';tc.font='10px monospace';tc.textAlign='center';tc.fillText('SG · 2026 · W01',600,1174);
 }
 makeWafer();
-const waferOptics=globalThis.createWaferOptics?.(texture);
+const circuitTexture=makePrismWafer();
+const waferOptics=globalThis.createWaferOptics?.(texture,circuitTexture);
 const leaves = [], wood = [];
 // Every strand runs continuously from the exposed root flare into a crown fork.
 const limbs = [
@@ -107,9 +110,10 @@ for (const [branch, limb] of limbs.entries()) {
  }
 }
 const silverGeometry = buildSilverCanopy(hash);
+const prismGeometry=prismCanopy(silverGeometry);
 if(globalThis.SiliconPointTree){
  const pointCanvas=document.createElement('canvas');pointCanvas.className='point-tree';pointCanvas.setAttribute('aria-hidden','true');scene.append(pointCanvas);
- pointRenderer=globalThis.SiliconPointTree.create(pointCanvas,leaves,wood,hash,silverGeometry);
+ pointRenderer=globalThis.SiliconPointTree.create(pointCanvas,leaves,wood,hash,silverGeometry,prismGeometry);
 }
 function discPoint(x,z,offset=0){const angle=stand*Math.PI*.5;return project(x,-z*Math.sin(angle)+170*stand+offset,z*Math.cos(angle));}
 function drawWafer(now){
@@ -126,12 +130,13 @@ function drawWafer(now){
   grain: camera.grain ?? .09,
   bloom: camera.bloom ?? .32,
   silver: Number(variation === "silver"),
- }) ?? texture;
+  prism: Number(variation === "prism"),
+ }) ?? (variation==='prism'?circuitTexture:texture);
  if (variation === 'silver' && opticalTexture === texture) ctx.filter='grayscale(1) brightness(.42)';
  ctx.drawImage(opticalTexture,0,0,1200,1200);
  ctx.filter='none';
  if(growth>.1){const shade=ctx.createRadialGradient(600,570,10,600,570,340*growth);shade.addColorStop(0,variation==='silver'?'#08080844':'#061005a0');shade.addColorStop(1,'#06100500');ctx.fillStyle=shade;ctx.fillRect(0,0,1200,1200);}
- if(variation==='silver' && growth>.05 && stand<.01){
+ if(variation!=='filament' && growth>.05 && stand<.01){
   const reflection=ctx.createRadialGradient(600,600,0,600,600,110*growth);
   reflection.addColorStop(0,'#ffffffb0');reflection.addColorStop(.07,'#ffffff60');reflection.addColorStop(.40,'#ffffff14');reflection.addColorStop(1,'#ffffff00');
   ctx.fillStyle=reflection;ctx.fillRect(0,0,1200,1200);
@@ -144,7 +149,7 @@ function drawWafer(now){
 function youngPlant(progress, variety) {
  const unfold = (start,end) => smooth(clamp((progress-start)/(end-start)));
  const height = 50*unfold(0,.1) + 72*unfold(.15,.45) + 28*unfold(.48,.65);
- const leader = y => variety==='silver'
+ const leader = y => variety!=='filament'
   ? [12*(y/269)**2,y,-8*(y/269)**2]
   : [15*Math.sin(6.1*y/320),y,9*Math.sin(7*y/320)];
  const shoots = [], blades = [];
@@ -157,7 +162,7 @@ function youngPlant(progress, variety) {
  // Young leaves also break at the leader's tip after the side shoots extend.
  blade(leader(113),.78,15,unfold(.405,.47));
  blade(leader(119),3.48,12,unfold(.43,.48));
- const forks = variety==='silver'
+ const forks = variety!=='filament'
   ? [[15,[-52,67,-15]],[18,[64,58,29]]]
   : [[53,[-39,145,12]],[68,[42,165,-20]]];
  for(const [i,[y,tip]] of forks.entries()) {
@@ -174,54 +179,54 @@ function youngPlant(progress, variety) {
  }
  return {height,leader,shoots,blades,opacity:1-unfold(.62,.86)};
 }
-function drawYoungPlant(){
- if(growth<=0 || growth>=.86)return;
- const plant=youngPlant(growth,variation), u=viewScale(), silver=variation==='silver';
- ctx.save();
- ctx.globalAlpha=plant.opacity;
- ctx.filter=`brightness(${tuning.tree.brightness ?? 1})`;
- ctx.lineCap='round';ctx.lineJoin='round';
- function stroke(path,extent,width){
-  ctx.lineWidth=Math.max(.55,width*u);
-  ctx.strokeStyle=silver?'#dbdfd4':'#bbcca3';
-  ctx.beginPath();
-  for(let i=0;i<=18;i++){
-   const p=project(...path(extent*i/18));
-   if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);
-  }
-  ctx.stroke();
+let youngCache;
+function youngGeometry(progress,variety){
+ if(progress<=0 || progress>=.86)return null;
+ if(youngCache?.progress===progress && youngCache.variety===variety)return youngCache;
+ const plant=youngPlant(progress,variety), points=[],hairs=[],links=[];
+ function put(list,p,shade,seed){
+  const color=variety==='prism'?prismColor(...p,seed):variety==='silver'?[1,1,1]:[.42+.54*seed,.81+.18*seed,1];
+  list.push(...p,...color.map(v=>v*shade),seed,0);
  }
- stroke(plant.leader,plant.height,1.6+growth*2);
- for(const shoot of plant.shoots)stroke(shoot.path,shoot.extent,1.4);
- for(const {base,angle,length,opening} of plant.blades){
+ function line(list,a,b,shade,seed){
+  put(list,a,shade,seed);put(list,b,shade,seed);
+ }
+ function stem(path,extent,thickness){
+  for(let strand=0;strand<4;strand++){
+   let last;
+   for(let i=0;i<=28;i++){
+    const t=i/28, p=path(t*extent), twist=strand*Math.PI/2+t*2;
+    const width=thickness*(1-t*.8);
+    const pos=[p[0]+width*Math.cos(twist),p[1],p[2]+width*Math.sin(twist)];
+    if(last)line(hairs,last,pos,.62+.10*strand,strand/4);
+    if(i%2===0)put(points,pos,.66+.3*hash(i,strand),hash(i,strand));
+    last=pos;
+   }
+  }
+ }
+ stem(plant.leader,plant.height,Math.min(1,plant.height/8));
+ for(const shoot of plant.shoots)stem(shoot.path,shoot.extent,.72*shoot.extent);
+ for(const [index,{base,angle,length,opening}] of plant.blades.entries()){
   const reach=length*opening, dx=Math.cos(angle), dz=Math.sin(angle);
   function surface(t,side){
-   const arch=Math.sin(Math.PI*t), width=side*reach*.25*arch*opening;
-   return project(base[0]+reach*t*dx-width*dz,
-    base[1]+reach*(t*(1.25-.81*opening)+.25*arch)-.32*Math.abs(width),
-    base[2]+reach*t*dz+width*dx);
+   const arch=Math.sin(Math.PI*t),w=side*reach*.25*arch*opening;
+   return [base[0]+reach*t*dx-w*dz,base[1]+reach*(t*(1.25-.81*opening)+.25*arch)-.32*Math.abs(w),base[2]+reach*t*dz+w*dx];
   }
-  // A fine dark cuticle keeps the pale blade readable over bright wafer cells.
-  ctx.beginPath();
-  for(let i=0;i<=12;i++){const p=surface(i/12,-1);if(!i)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);}
-  for(let i=12;i>=0;i--){const p=surface(i/12,1);ctx.lineTo(p.x,p.y);}
-  ctx.closePath();ctx.strokeStyle='#27382f';ctx.lineWidth=Math.max(.75,u);ctx.stroke();
-  for(const side of [-1,1]){
-   ctx.beginPath();
-   for(let i=0;i<=12;i++){
-    const p=surface(i/12,side);
-    if(!i)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);
+  for(let i=1;i<=14;i++){
+   const t=i/14;
+   line(hairs,surface((i-1)/14,0),surface(t,0),.92,.5);
+   for(const side of [-1,1]){
+    line(links,surface((i-1)/14,side),surface(t,side),.7,.5);
+    if(i%2===0)line(links,surface(t*.78,0),surface(t,side),.84,.5);
    }
-   for(let i=12;i>=0;i--){const p=surface(i/12,0);ctx.lineTo(p.x,p.y);}
-   ctx.closePath();
-   ctx.fillStyle=silver?(side<0?'#ccd8ca':'#81998b'):(side<0?'#bfdf98':'#73995f');
-   ctx.fill();
   }
-  ctx.beginPath();
-  for(let i=0;i<=12;i++){const p=surface(i/12,0);if(!i)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);}
-  ctx.strokeStyle=silver?'#eef6e9':'#e2f4c6';ctx.lineWidth=Math.max(.55,u*.75);ctx.stroke();
+  for(let i=0;i<86;i++){
+   const seed=hash(index,i,14),t=hash(index,i,17);
+   put(points,surface(t,2*hash(index,i,23)-1),.38+.62*seed,seed);
+  }
  }
- ctx.restore();
+ youngCache={progress,variety,opacity:plant.opacity,data:{points:new Float32Array(points),hairs:new Float32Array(hairs),links:new Float32Array(links)}};
+ return youngCache;
 }
 // Match the GPU's interpolated birth time for a line whose growing tip lies
 // between samples. Completed segments keep their original world coordinates.
@@ -235,33 +240,44 @@ function growingLine(ax,ay,az,start,bx,by,bz,end){
  const a=project(ax,ay,az),b=project(bx,by,bz);
  ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
 }
-function drawSilverFallback() {
- const tree = tuning.tree;
- ctx.save();
- ctx.strokeStyle = ctx.fillStyle = 'white';
- ctx.lineWidth = Math.max(.45,viewScale()*.68);
- ctx.filter = `brightness(${tree.brightness ?? 1})`;
- for (const [name,opacity] of [['hairs',(tree.filamentOpacity ?? .35)*2],['links',(tree.linkOpacity ?? .13)*4]]) {
-  const data=silverGeometry[name];
-  ctx.globalAlpha=Math.min(1,opacity);
-  ctx.beginPath();
-  for(let i=0;i<data.length;i+=16) {
-   growingLine(data[i],data[i+1],data[i+2],data[i+7],data[i+8],data[i+9],data[i+10],data[i+15]);
+// Group nearby tones once, allowing Canvas to paint each batch with one glow.
+const colorBatches=new WeakMap();
+function drawParticleFallback(geometry,opacity){
+ let batches=colorBatches.get(geometry);
+ if(!batches){
+  batches=[];
+  for(const [name,data] of Object.entries(geometry)){
+   const dots=name==='points', step=dots?8:16, tones=new Map();
+   for(let i=0;i<data.length;i+=step){
+    const color=[3,4,5].map(k=>Math.round(Math.min(1,data[i+k])*6)*42).join(',');
+    if(!tones.has(color))tones.set(color,[]);
+    tones.get(color).push(i);
+   }
+   for(const [color,indices] of tones)batches.push({color:'rgb('+color+')',name,data,indices,dots});
   }
-  ctx.stroke();
+  colorBatches.set(geometry,batches);
  }
- const points=silverGeometry.points, size=Math.max(.65,viewScale()*(tree.pointSize ?? 1));
- ctx.globalAlpha=.84;
- for(let i=0;i<points.length;i+=8) {
-  if(growth<points[i+7])continue;
-  const p=project(points[i],points[i+1],points[i+2]);
-  ctx.fillRect(p.x,p.y,size,size);
+ const tree=tuning.tree,u=viewScale(),size=Math.max(.7,u*(tree.pointSize ?? 1));
+ ctx.save();ctx.filter=`brightness(${tree.brightness ?? 1})`;
+ ctx.lineWidth=Math.max(.55,u*.7);
+ for(const {color,name,data,indices,dots} of batches){
+  ctx.fillStyle=ctx.strokeStyle=ctx.shadowColor=color;
+  ctx.shadowBlur=2*u;
+  const alpha=dots?1:name==='links'?(tree.linkOpacity ?? .13)*4:(tree.filamentOpacity ?? .35)*2;
+  ctx.globalAlpha=opacity*Math.min(1,alpha);ctx.beginPath();
+  for(const i of indices){
+   if(dots){
+    if(data[i+7]>growth)continue;
+    const p=project(data[i],data[i+1],data[i+2]);ctx.rect(p.x,p.y,size,size);
+   }else growingLine(data[i],data[i+1],data[i+2],data[i+7],data[i+8],data[i+9],data[i+10],data[i+15]);
+  }
+  if(dots)ctx.fill();else ctx.stroke();
  }
  ctx.restore();
 }
 function drawRootReflection(){
  // Clip the inverted lower trunk to the projected disc, including low camera angles.
- if (variation !== 'silver' || growth < .05 || stage < 2 || elevation <= 0) return;
+ if (variation === 'filament' || growth < .05 || stage < 2 || elevation <= 0) return;
  ctx.save();ctx.beginPath();
  for(let i=0;i<=72;i++){
   const theta=i*Math.PI/36, p=discPoint(280*Math.cos(theta),280*Math.sin(theta));
@@ -280,10 +296,12 @@ function drawRootReflection(){
  ctx.restore();
 }
 function drawTree(now){
- const rendered=pointRenderer?.draw({variation,width,height,dpr,stage,growth,yaw,elevation,scale:viewScale(),time:reduced?0:now*.001,reduced,style:tuning.tree,sway:tuning.motion.sway ?? 1});
- drawYoungPlant();
- if (growth <= .48 || rendered) return;
- if (variation === 'silver') {drawSilverFallback();return;}
+ const young=youngGeometry(growth,variation);
+ const rendered=pointRenderer?.draw({young,variation,width,height,dpr,stage,growth,yaw,elevation,scale:viewScale(),time:reduced?0:now*.001,reduced,style:tuning.tree,sway:tuning.motion.sway ?? 1});
+ if(rendered)return;
+ if(young)drawParticleFallback(young.data,young.opacity);
+ if(growth<=.48)return;
+ if (variation !== 'filament') {drawParticleFallback(variation==='prism'?prismGeometry:silverGeometry,1);return;}
  const u = viewScale();
  const tree = tuning.tree;
  ctx.save();
@@ -347,8 +365,9 @@ canvas.addEventListener('wheel',e=>{e.preventDefault();changeZoom(-e.deltaY*.001
 const dialog=$('#notes');$('#about').addEventListener('click',()=>dialog.showModal());$('#closeNotes').addEventListener('click',()=>dialog.close());dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
 reduceQuery.addEventListener('change',e=>{reduced=e.matches;if(reduced){spin=false;$('#spin').setAttribute('aria-pressed','false');$('#spin').setAttribute('aria-label','Start automatic rotation');growth=targetGrowth;if(stage)stand=0;}requestDraw();});document.addEventListener('visibilitychange',()=>{if(!document.hidden)requestDraw();});
 $('#variation').addEventListener('change', event => {
- variation = event.target.value === 'filament' ? 'filament' : 'silver';
+ variation = Object.hasOwn(variantNames,event.target.value)?event.target.value:'silver';
  scene.setAttribute('data-variation',variation);
  updateUI();announce(specimenName()+' selected.');requestDraw();
 });
+$('#variation').value=variation;scene.setAttribute('data-variation',variation);
 updateUI();resize();

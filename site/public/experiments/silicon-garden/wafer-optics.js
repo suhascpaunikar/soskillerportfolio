@@ -13,7 +13,7 @@
     varying vec2 uv;
     uniform sampler2D etched;
     uniform vec2 tilt;
-    uniform float phase, foil, depth, grain, bloom, silver;
+    uniform float phase, foil, depth, grain, bloom, silver, prism;
     float holoHash(vec2 p) {
       vec3 p3 = fract(vec3(p.xyx) * .1031);
       p3 += dot(p3, p3.yzx + 33.33);
@@ -38,6 +38,11 @@
       float specular = exp(-pow((normalUv.x + normalUv.y * .58 + tilt.x * .48 - .24) * 5., 2.));
       vec3 silicon = texture2D(etched, vec2(p.x, 1. - p.y)).rgb;
       float etch = dot(silicon, vec3(.2126,.7152,.0722));
+      if (prism > .5) {
+        float gold=smoothstep(.08,.32,silicon.r-silicon.b);
+        float sweep=exp(-pow((normalUv.x+normalUv.y*.7+tilt.y*.55-.15)*8.,2.));
+        return silicon*(.77+.23*foil) + foil*sweep*mix(vec3(.12,.07,.18),vec3(.47,.36,.15),gold) + gold*glint*.27;
+      }
       if (silver > .5) {
         vec2 die = fract(p * 18.);
         vec2 seamWidth = min(die, 1.-die);
@@ -73,7 +78,7 @@
       gl_FragColor = vec4(color,mask);
     }`;
 
-  globalThis.createWaferOptics = function (texture) {
+  globalThis.createWaferOptics = function (texture, prismTexture) {
     const target = document.createElement('canvas');
     target.width = target.height = 640;
     const gl = target.getContext('webgl', { alpha: true, preserveDrawingBuffer: true, premultipliedAlpha: false });
@@ -100,20 +105,28 @@
     const position = gl.getAttribLocation(program, 'position');
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-    gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+    function uploadTile(source) {
+    const tile=gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D,tile);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture);
-    const locations = Object.fromEntries(['tilt','phase','foil','depth','grain','bloom','silver'].map(
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+    return tile;
+    }
+    const etchedTile=uploadTile(texture);
+    let circuitTile;
+    const locations = Object.fromEntries(['tilt','phase','foil','depth','grain','bloom','silver','prism'].map(
       name => [name, gl.getUniformLocation(program, name)]));
     let previous = '';
     return function draw(facing, direction, settings) {
-      if (gl.isContextLost()) return texture;
+      if (gl.isContextLost()) return settings.prism ? prismTexture : texture;
       const key = [facing, direction, ...Object.values(settings)].join(',');
       if (key !== previous) {
         previous = key;
+        if(settings.prism && !circuitTile)circuitTile=uploadTile(prismTexture);
+        gl.bindTexture(gl.TEXTURE_2D,settings.prism?circuitTile:etchedTile);
         gl.uniform2f(locations.tilt, facing, direction);
         for (const [name, value] of Object.entries(settings)) gl.uniform1f(locations[name], value);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
